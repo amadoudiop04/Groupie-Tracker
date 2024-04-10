@@ -1,0 +1,159 @@
+
+body {
+    height: 100%;
+    background: rgb(39, 38, 38);
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+h1 {
+    display: flex;
+    justify-content: center;
+    font-size: 3em;
+    color: white;
+    font-family: "Neonderthaw", cursive;
+    font-weight: 400;
+    font-style: normal;
+    margin: 0;
+}
+
+.top-bar {
+    background: #201e1e;
+    margin-left: 10%;
+    height: 7%;
+    width: 89%;
+    border-radius: 10px;
+    border: solid 2px;
+}
+
+@keyframes rotating {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.my-disk:hover {
+    animation: rotating 2s linear infinite;
+}
+
+.container {
+    text-align: center;
+}
+
+.sidebar {
+    height: 100%;
+    width: 4%; 
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: #201e1e;
+    padding-top: 1%;
+    transition: width 0.3s; 
+    border-radius: 10px;
+    border: solid 2px;
+}
+
+.sidebar.expanded {
+    width: 9%; 
+    border-radius: 10px;
+}
+
+.sidebar .dropdown-btn {
+    width: 50%;
+    padding: 16%;
+    font-size: 16px;
+    text-align: left;
+    background-color: #201e1e;
+    border: none;
+    outline: none;
+    cursor: pointer;
+}
+
+.sidebar .dropdown-container {
+    display: none;
+    background-color: #201e1e;
+}
+
+.sidebar .dropdown-container a {
+    padding: 12% 16%;
+    text-decoration: none;
+    font-size: 14px;
+    color: white;
+    display: block;
+}
+
+.sidebar .dropdown-btn.active {
+    background-color: #201e1e;
+}
+
+.sidebar .dropdown-container.show {
+    display: block;
+}
+
+
+.icone{
+    display: flex;
+    margin: 10%;
+
+}
+
+.icone-2{
+    display: flex;
+    margin: 10%;
+}
+
+.btn-containers{
+text-align: center;
+}
+
+.buttons{
+    font-size: 2em;
+    margin: 1%;
+    border-radius: 20px;
+    border: solid 3px;
+    font-family: "Neonderthaw", cursive;
+    font-weight: 400;
+    font-style: normal;
+}
+
+#artiste-example{
+    margin: 0;
+    color: white;
+    background-color: rgba(0,0,0,0.5);
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    padding-left: 15%;
+    font-family: "Neonderthaw", cursive;
+    font-weight: 400;
+    font-style: normal;
+    font-size: 2em;
+}
+
+img{
+    border-radius: 100px;
+    margin: 5%;
+    transition: transform 0.3s ease;
+    border: solid black;
+}
+
+
+img:hover{
+    transform: scale(1.1);
+}
+
+@media screen and (max-width: 1200px) {
+    .sidebar {
+        width: 25%;
+    }
+
+    .sidebar.expanded {
+        width: 30%;
+    }
+}
+
+

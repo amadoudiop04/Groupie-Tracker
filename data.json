@@ -1,0 +1,38 @@
+[
+    {
+        "name": "daily-mix",
+        "images": {
+            "xs": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT-6db6lYy5waWQIXhjCX0jzUAOMvbw_7LTxg&s",
+            "sm": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT-6db6lYy5waWQIXhjCX0jzUAOMvbw_7LTxg&s",
+            "md": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT-6db6lYy5waWQIXhjCX0jzUAOMvbw_7LTxg&s",
+            "lg": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT-6db6lYy5waWQIXhjCX0jzUAOMvbw_7LTxg&s"
+        }
+    },
+    {
+        "name": "daily-mix-1",
+        "images": {
+            "xs": "https://www.zimbalam.fr/wp-content/uploads/2023/10/1696915494_21-Savage-citoyen-americain-nouvellement-permanent-annonce-son-premier-spectacle.jpg",
+            "sm": "https://www.zimbalam.fr/wp-content/uploads/2023/10/1696915494_21-Savage-citoyen-americain-nouvellement-permanent-annonce-son-premier-spectacle.jpg",
+            "md": "https://www.zimbalam.fr/wp-content/uploads/2023/10/1696915494_21-Savage-citoyen-americain-nouvellement-permanent-annonce-son-premier-spectacle.jpg",
+            "lg": "https://www.zimbalam.fr/wp-content/uploads/2023/10/1696915494_21-Savage-citoyen-americain-nouvellement-permanent-annonce-son-premier-spectacle.jpg"
+        }
+    },
+    {
+        "name": "daily-mix-2",
+        "images": {
+            "xs": "https://img.buzzfeed.com/buzzfeed-static/complex/images/yjh9lfmvnujwwxctsipc/nemzzz-interview-nemzzz-interview.jpg",
+            "sm": "https://img.buzzfeed.com/buzzfeed-static/complex/images/yjh9lfmvnujwwxctsipc/nemzzz-interview-nemzzz-interview.jpg",
+            "md": "https://img.buzzfeed.com/buzzfeed-static/complex/images/yjh9lfmvnujwwxctsipc/nemzzz-interview-nemzzz-interview.jpg",
+            "lg": "https://img.buzzfeed.com/buzzfeed-static/complex/images/yjh9lfmvnujwwxctsipc/nemzzz-interview-nemzzz-interview.jpg"
+        }
+    },
+    {
+        "name": "daily-mix-3",
+        "images": {
+            "xs": "https://imgproxy.ra.co/_/quality:66/aHR0cHM6Ly9zdGF0aWMucmEuY28vaW1hZ2VzL3Byb2ZpbGVzL3NxdWFyZS9jZW50cmFsY2VlLmpwZz9kYXRlVXBkYXRlZD0xNjc0NjQ2MTg4MDAw",
+            "sm": "https://imgproxy.ra.co/_/quality:66/aHR0cHM6Ly9zdGF0aWMucmEuY28vaW1hZ2VzL3Byb2ZpbGVzL3NxdWFyZS9jZW50cmFsY2VlLmpwZz9kYXRlVXBkYXRlZD0xNjc0NjQ2MTg4MDAw",
+            "md": "https://imgproxy.ra.co/_/quality:66/aHR0cHM6Ly9zdGF0aWMucmEuY28vaW1hZ2VzL3Byb2ZpbGVzL3NxdWFyZS9jZW50cmFsY2VlLmpwZz9kYXRlVXBkYXRlZD0xNjc0NjQ2MTg4MDAw",
+            "lg": "https://imgproxy.ra.co/_/quality:66/aHR0cHM6Ly9zdGF0aWMucmEuY28vaW1hZ2VzL3Byb2ZpbGVzL3NxdWFyZS9jZW50cmFsY2VlLmpwZz9kYXRlVXBkYXRlZD0xNjc0NjQ2MTg4MDAw"
+        }
+    }
+]
