@@ -6,11 +6,12 @@ body {
     }
     
     .player{
-      height: 95vh;
+      height: 85vh;
       display: flex;
       align-items: center;
       flex-direction: column;
       justify-content: center;
+     
   }
     .wrapper{
       border: 1px solid transparent;
@@ -206,13 +207,15 @@ body {
     
     .inputResquest{
         display: flex;
-        /* justify-content: center; */
-        transform: translateY(-1300%);
+        justify-content: center;
+        transform: translateY(-120%);
     }
 
     .requestSong{ 
         border-radius: 10px;
         font-size: 2em;
+        margin: 0;
+        padding: 0
         }
 
         
@@ -225,4 +228,16 @@ body {
         border-radius: 10px;
         height: 50px;
         width: 85px;
+    }
+
+
+    .lyrics{
+      position: absolute;
+      border: solid black 1px ;
+      border-radius: 10px;
+      color: #ddd;
+      background-color: rgba(64, 62, 62, 0.5);
+      transform: translateY(3%);
+      width: 30%;
+      height: 80%;
     }

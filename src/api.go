@@ -2,12 +2,15 @@ package main
 
 import (
 	"context"
+	"crypto/rand"
+	"fmt"
 	"log"
+	"encoding/binary"
 	"github.com/zmb3/spotify"
 	"golang.org/x/oauth2/clientcredentials"
 )
 
-func main() {
+func Api() *spotify.FullTrack{
 	authConfig := &clientcredentials.Config{
 		ClientID:     "a8795237d8ea48a09bc79862cf40c00b",
 		ClientSecret: "8847d2dc62fc4948b882a1069e16cb35",
@@ -30,32 +33,31 @@ func main() {
 	log.Println("playlist id:", playlist.ID)
 	log.Println("playlist name:", playlist.Name)
 	log.Println("playlist description:", playlist.Description)
+	
+	max := len(playlist.Tracks.Tracks)
+    var randomIndex int
+
+    if max > 0 {
+        buf := make([]byte, 8)
+        _, err := rand.Read(buf)
+        if err != nil {
+            log.Fatalf("error generating random index: %v", err)
+        }
+        randomIndex = int(binary.BigEndian.Uint64(buf) % uint64(max))
+    }
+
+    track := playlist.Tracks.Tracks[randomIndex].Track
+
+    log.Println("Track Name", track.Name)
+    log.Println("Artists(s)", getArtistsNames(track.Artists))
+
+    return &track
 }
 
-
-// type PlaylistInfo struct {
-// 	ID          string
-// 	Name        string
-// 	Description string
-// 	ImageURL    string
-// }
-
-// var playlistInfo PlaylistInfo
-
-// 	playlistInfo.ID = string(playlist.ID)
-// 	playlistInfo.Name = playlist.Name
-// 	playlistInfo.Description = playlist.Description
-
-// 	// Extract artist image URL
-// 	if len(playlist.Tracks.Tracks) > 0 && len(playlist.Tracks.Tracks[0].Track.Artists) > 0 {
-// 		artist := playlist.Tracks.Tracks[0].Track.Artists[0]
-// 		if len(artist.Images) > 0 {
-// 			playlistInfo.ImageURL = artist.Images[0].URL
-// 		}
-// 	}
-
-// 	// Print playlist information
-// 	log.Println("playlist id:", playlistInfo.ID)
-// 	log.Println("playlist name:", playlistInfo.Name)
-// 	log.Println("playlist description:", playlistInfo.Description)
-// 	log.Println("playlist image URL:", playlistInfo.ImageURL)
+func getArtistsNames(artists []spotify.SimpleArtist) string {
+	var names []string
+	for _, artist := range artists{
+		names = append(names, artist.Name)
+	}
+	return fmt.Sprintf("%v", names)
+}

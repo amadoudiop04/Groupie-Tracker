@@ -17,6 +17,11 @@
 <div class="scoreBoard" >
     20/100Pts
 </div>
+<div  class="lyrics" > 
+<p id="divParoles">
+    {{.lyrics}}
+</p>
+</div>
    <div class="player">
        <div class="wrapper">
            <div class="details">
@@ -26,36 +31,36 @@
                 <img src="{{.ImageURL}}" alt="Artist Image">
             {{end}}
         </div>
-               <div class="track-name">{{.Name}}</div>
-               <div class="track-artist">{{.Description}}</div>
+               <div class="track-name">{{.artist}}</div>
+               <div class="track-artist">{{.title}}</div>
            </div>
 
            <div class="slider_container">
                <div class="current-time">00:00</div>
-                <input type="range" min="1" max="100" value="0" class="seek_slider" onchange="seekTo()">
+                <input type="range" min="1" max="100" value="0" class="seek_slider">
                 <div class="total-duration">00:00</div>
            </div>
 
            <div class="slider_container">
                <i class="fa fa-volume-down"></i>
-                <input type="range" min="1" max="100" value="99" class="volume_slider" onchange="setVolume()">
+                <input type="range" min="1" max="100" value="99" class="volume_slider">
                 <i class="fa fa-volume-up"></i>
            </div>
 
            <div class="buttons">
-               <div class="random-track" onclick="randomTrack()">
+               <div class="random-track" >
                    <i class="fas fa-random fa-2x" title="random"></i>
                </div>
-               <div class="prev-track" onclick="previous()">
+               <div class="prev-track" id="previousButton"">
                     <i class="fa fa-step-backward fa-2x"></i>
                 </div>
-                <div class="playpause-track" onclick="play()">
+                <div class="playpause-track" id="pauseButton"">
                     <i class="fa fa-play-circle fa-5x"></i>
                 </div>
-                <div class="next-track" onclick="next()">
+                <div class="next-track" id="nextButton"">
                     <i class="fa fa-step-forward fa-2x"></i>
                 </div>
-                <div class="repeat-track" onclick="restart()">
+                <div class="repeat-track" id="restartButton" ">
                     <i class="fa fa-repeat fa-2x" title="repeat"></i>
                 </div>
            </div>
@@ -75,5 +80,7 @@
    <div class="inputResquest">
     <input class="requestSong" type="text" placeholder="Music Name..." autocomplete="off">
     </div>
+
+   
 </body>
 </html>
