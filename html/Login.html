@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" Content="IE-edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> Groupie Tracker </title>
+    <link rel="stylesheet" href="../static/login.css">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+</head>
+
+<body>
+    <div class="wrapper">
+            <form id="loginForm" action="/LoginHandler" method="POST">
+                <h1>Connexion</h1>
+
+                <div class="input-box">
+                    <input name="username" id="username" type="text" placeholder="Nom d'utilisateur / Email" required>
+                    <i class='bx bxs-user'></i>
+                </div>
+
+                <div class="input-box">
+                    <input name="password" id="password" type="password" placeholder="Mot de passe" required>
+                    <i class='bx bxs-lock-alt' ></i>
+                </div>
+
+                <div class="remember-forgot">
+                    <a href="/PasswordForgotten">Mot de passe oublié</a>
+                </div>
+                {{if .ErrorMessage}}
+                <p style="color: red;">{{.ErrorMessage}}</p>
+                {{end}}
+
+                <button type="sumbit" class="btn">Se connecter</button>
+
+                <div class="register-link">
+                    <p> Vous n'avez pas de compte ? <a href="/Register">S'enregister</a> </p>
+                </div>
+            </form>
+    </div>
+</body>
+    
+</html>
