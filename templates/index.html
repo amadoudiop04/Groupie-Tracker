@@ -1,34 +1,22 @@
 <!DOCTYPE html>
-<html lang="en-fr">
-
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Guess the song</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,300..700;1,300..700&display=swap"
-        rel="stylesheet">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Satisfy&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../static/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,300..700;1,300..700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Satisfy&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../static/style.css">
 </head>
-
 <body>
-
     <div class="title-top">Guess the song 🎼</div>
     <div class="scoreBoard">
         20/100Pts
     </div>
-
     <div class="player">
         <div class="lyrics">
             <div class="divParoles">
@@ -37,11 +25,8 @@
         </div>
         <div class="wrapper">
             <div class="details">
-                <div class="now-playing">PLAYING x OF y</div>
-                <div class="track-art">
-                    <!-- {{if .ImageURL}}
-                      <img src="{{.ImageURL}}" alt="Artist Image">
-                  {{end}} -->
+                <div class="now-playing">🔈🔉🔊🎶</div>
+                <div class="track-art" id="rotate">
                 </div>
                 <div class="track-name">
                     {{.Singer}}
@@ -49,32 +34,30 @@
                 <div class="track-artist">
                     {{.TitleSong}}
                 </div>
+            </div>
 
+            <div class="container">
+                <span class="wave"></span>
+                <span class="wave" ></span>
+                <span class="wave" ></span>
+                <span class="wave" ></span>
+                <span class="wave" ></span>
             </div>
-            <div class="loader">
-                <span class="stroke"></span>
-                <span class="stroke"></span>
-                <span class="stroke"></span>
-                <span class="stroke"></span>
-                <span class="stroke"></span>
-                <span class="stroke"></span>
-                <span class="stroke"></span>
-            </div>
+
             <div class="buttons">
-                <div class="prev-track" id="previousButton">
-                    <i class=" fa fa-step-backward fa-2x"></i>
+                <div class="prev-track" >
+                        <i class="fa fa-step-backward fa-2x"></i>
                 </div>
-                <div class="playpause-track" id="pauseButton">
-                    <i class=" fa fa-play-circle fa-5x"></i>
+                <div class="playpause-track">
+                    <i class="far fa-play-circle fa-5x"></i>
                 </div>
-                <div class="next-track" id="nextButton">
-                    <i class=" fa fa-step-forward fa-2x"></i>
+                <div class="next-track" >
+                    <i class="fas fa-step-forward fa-2x"></i>
                 </div>
-                <div class="repeat-track" id="restartButton">
-                    <i class=" fa fa-repeat fa-2x" title="repeat"></i>
+                <div class="repeat-track" >
+                    <i class="fa fa-repeat fa-2x" title="repeat"></i>
                 </div>
             </div>
-
             <form action="" method="post">
                 <div class="inputResquest">
                     <input class="requestSong" type="text" placeholder="Music Name..." name="value" autocomplete="off">
@@ -82,8 +65,6 @@
                 </div>
             </form>
         </div>
-
     </div>
 </body>
-
 </html>
