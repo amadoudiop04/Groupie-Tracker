@@ -27,6 +27,9 @@
             <div class="details">
                 <div class="now-playing">🔈🔉🔊🎶</div>
                 <div class="track-art" id="rotate">
+                     {{if .ImageURL}}
+                      <img src="{{.ImageURL}}" alt="Artist Image">
+                  {{end}}
                 </div>
                 <div class="track-name">
                     {{.Singer}}
@@ -45,17 +48,17 @@
             </div>
 
             <div class="buttons">
-                <div class="prev-track" >
-                        <i class="fa fa-step-backward fa-2x"></i>
+                <div class="prev-track">
+                        <button class="fa fa-step-backward fa-2x" ></button>
                 </div>
                 <div class="playpause-track">
-                    <i class="far fa-play-circle fa-5x"></i>
+                    <button class="far fa-play-circle fa-5x" ></button>
                 </div>
                 <div class="next-track" >
-                    <i class="fas fa-step-forward fa-2x"></i>
+                    <button class="fas fa-step-forward fa-2x" ></button>
                 </div>
                 <div class="repeat-track" >
-                    <i class="fa fa-repeat fa-2x" title="repeat"></i>
+                    <button class="fa fa-repeat fa-2x" title="repeat" ></button>
                 </div>
             </div>
             <form action="" method="post">

@@ -15,6 +15,14 @@ var (
 	currentIndex int
 )
 
+type dataImage struct {
+	imageUrl string
+}
+
+var data = dataImage{
+	imageUrl: "",
+}
+
 func Api() *spotify.FullTrack {
 	authConfig := &clientcredentials.Config{
 		ClientID:     "a8795237d8ea48a09bc79862cf40c00b",
@@ -57,21 +65,41 @@ func Api() *spotify.FullTrack {
 		}
 		log.Println("Track Name", track.Name)
 		log.Println("Artists(s)", getArtistsNames(track.Artists))
+
+		artistID := track.Artists[0].ID
+		artistDetails, err := client.GetArtist(spotify.ID(artistID))
+		if err != nil {
+			log.Printf("Error retrieving artist details: %v", err)
+		} else {
+			log.Println("Artist Image URL:", artistDetails.Images[0].URL)
+		}
+
+		artistImageURL := ""
+		if len(artistDetails.Images) > 0 {
+			artistImageURL = artistDetails.Images[0].URL
+		}
+
+		data.imageUrl = artistImageURL
+
 		break
 	}
+
+	nextTrack := func() {
+		currentIndex = (currentIndex + 1) % len(playlist.Tracks.Tracks)
+	}
+
+	previousTrack:= func() {
+		currentIndex = (currentIndex - 1 + len(playlist.Tracks.Tracks)) % len(playlist.Tracks.Tracks)
+	}
+
+	restartPlaylist := func(){
+		currentIndex = getRandomIndex(len(playlist.Tracks.Tracks))
+	}
+
+	nextTrack()
+	previousTrack()
+	restartPlaylist()
 	return track
-}
-
-func nextTrack() {
-	currentIndex = (currentIndex + 1) % len(playlist.Tracks.Tracks)
-}
-
-func previousTrack() {
-	currentIndex = (currentIndex - 1 + len(playlist.Tracks.Tracks)) % len(playlist.Tracks.Tracks)
-}
-
-func restartPlaylist() {
-	currentIndex = getRandomIndex(len(playlist.Tracks.Tracks))
 }
 
 func getRandomIndex(max int) int {

@@ -12,6 +12,7 @@ type Song struct {
 	Singer     string
 	TitleSong  string
 	LyricsSong string
+	ImageURL   string
 }
 
 type LyricsResponse struct {
@@ -22,6 +23,7 @@ var CurrentSong = Song{
 	Singer:     "",
 	TitleSong:  "",
 	LyricsSong: "",
+	ImageURL:   "",
 }
 
 func GetLyrics(artist, title string) (string, error) {
@@ -33,7 +35,7 @@ func GetLyrics(artist, title string) (string, error) {
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
 		if err != nil {
-				return
+			return
 		}
 	}(resp.Body)
 
@@ -62,10 +64,12 @@ func LoadData() {
 	CurrentSong.Singer = artist
 	CurrentSong.TitleSong = title
 	CurrentSong.LyricsSong = lyrics
+	CurrentSong.ImageURL = data.imageUrl
 
 	fmt.Println("artist", artist)
 	fmt.Println("Title", title)
 	fmt.Println("lyrics :", lyrics)
+	fmt.Println("imageUrl:", data.imageUrl)
 	// fmt.Println("artist" , currentSong.Singer)
 	// fmt.Println("Title", currentSong.TitleSong)
 	// fmt.Println("lyrics :", currentSong.LyricsSong)
