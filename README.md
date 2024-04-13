@@ -1,6 +1,6 @@
 # Groupie-Tracker - Plateforme de jeux en ligne
 
-Groupie Tracker est un projet mêlant golang, HTML et CSS, ayant pour objectif de développer un site internet permettant de jouer à trois jeux en ligne : un blindtest, un guess the song et un petit bac.
+Groupie Tracker est un projet mêlant golang, HTML et CSS, ayant pour objectif de développer un site internet permettant de jouer à trois jeux en ligne, tous liés à l'univers musical : un blindtest, un guess the song et un petit bac.
 
 ## Description
 
@@ -10,7 +10,7 @@ Une fois inscrit et connecté, l'utilisateur peut choisir le jeu auquel il souha
 
 ### Jeux
 
-#### Guess the song
+#### Guess the song 📜
 
 Le but du guess the song est de trouver le titre d'une musique à partir de ses paroles. 
 Les points sont attribués en fonction de la rapidité des joueurs : plus vous répondez rapidement par rapport aux autres joueurs, plus vous obtenez de points ! Les points attribués sont doublés à chaque tour de jeu.
@@ -18,9 +18,9 @@ Un tour de jeu prend fin lorsque tous les joueurs ont trouvé le titre de la cha
 Entre chaque tour, le classement apparaît pour permetttre aux joueurs de connaître leur position actuelle.
 La partie prend fin lorsque le nombre de tour atteint le nombre définit à la création de la partie. Le classement final apparaît pour déterminer le vainqueur de la partie.
 
-#### Blindtest
+#### Blindtest 🎧 
 
-Le but du blindtest est similaire à celui du guess the song, cette fois cependant, il faut retrouver le titre de la musique à partir du son : les paroles ne sont pas affichées ! 
+Le but du blindtest est similaire à celui du guess the song, cette fois cependant, il faut retrouver le titre de la musique à partir du son : les paroles ne sont pas affichées !  
 La musique choisie ainsi que l'extrait de celle-ci sont aléatoires. La durée minimale de cet extrait est configurée à la création de la partie. 
 Les extraits audios peuvent également être configurés à la création de la partie : ralentis, accélérés, inversé ou normal, à vous de choisir !
 Les points sont attribués en fonction de la rapidité des joueurs : plus vous répondez rapidement par rapport aux autres joueurs, plus vous obtenez de points. 
@@ -28,7 +28,7 @@ Un tour de jeu prend fin lorsque tous les joueurs ont trouvé le titre de la cha
 Entre chaque tour, le classement apparaît pour permetttre aux joueurs de connaître leur position actuelle.
 La partie prend fin lorsque le nombre de tour atteint le nombre définit à la création de la partie. Le classement final apparaît pour déterminer le vainqueur de la partie.
 
-#### Petit bac
+#### Petit bac ✏️
 
 Le but du petit bac est de trouver un mot pour chaque catégorie avec la lettre imposé !
 À chaque tour, une lettre aléatoire est imposé par le jeu. Les joueurs doivent trouver un mot commençant par cette lettre pour chaque catégorie imposée. Le même lettre ne peut pas être imposée deux fois lors d'une même partie.
@@ -51,6 +51,8 @@ La partie prend fin lorsque le nombre de tour atteint le nombre définit à la c
 ### Fonctionnalités diverses
 
 En cas d'oubli de mot de passe, l'utilisateur peut recevoir un mail pour le réinitialiser.
+Personnalisation des parties lors de leur création.
+Possibilité d'inviter ses amis par mail ou directement depuis le site.
 
 ## Démarrage
 
