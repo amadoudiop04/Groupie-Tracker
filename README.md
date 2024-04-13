@@ -50,8 +50,8 @@ La partie prend fin lorsque le nombre de tour atteint le nombre définit à la c
 
 ### Fonctionnalités diverses
 
-En cas d'oubli de mot de passe, l'utilisateur peut recevoir un mail pour le réinitialiser.
-Personnalisation des parties lors de leur création.
+En cas d'oubli de mot de passe, l'utilisateur peut recevoir un mail pour le réinitialiser.  
+Personnalisation des parties lors de leur création.  
 Possibilité d'inviter ses amis par mail ou directement depuis le site.
 
 ## Démarrage
