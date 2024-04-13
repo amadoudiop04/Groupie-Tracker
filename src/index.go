@@ -1,22 +1,27 @@
-package main
+package api
 
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 )
 
-
-// type song struct{
-// 	singer string
-// 	titleSong string
-// 	lyricsSong string
-// }
-
+type Song struct {
+	Singer     string
+	TitleSong  string
+	LyricsSong string
+}
 
 type LyricsResponse struct {
 	Lyrics string `json:"lyrics"`
+}
+
+var CurrentSong = Song{
+	Singer:     "",
+	TitleSong:  "",
+	LyricsSong: "",
 }
 
 func GetLyrics(artist, title string) (string, error) {
@@ -25,7 +30,12 @@ func GetLyrics(artist, title string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defer resp.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+				return
+		}
+	}(resp.Body)
 
 	if resp.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("failed to retrieve lyrics, status code: %d", resp.StatusCode)
@@ -39,7 +49,7 @@ func GetLyrics(artist, title string) (string, error) {
 	return lyricsResponse.Lyrics, nil
 }
 
-func main() {
+func LoadData() {
 	track := Api()
 	artist := getArtistsNames(track.Artists)
 	title := track.Name
@@ -49,111 +59,14 @@ func main() {
 		log.Fatalf("error retrieving lyrics: %v", err)
 	}
 
-	fmt.Println("artist" ,artist)
+	CurrentSong.Singer = artist
+	CurrentSong.TitleSong = title
+	CurrentSong.LyricsSong = lyrics
+
+	fmt.Println("artist", artist)
 	fmt.Println("Title", title)
 	fmt.Println("lyrics :", lyrics)
+	// fmt.Println("artist" , currentSong.Singer)
+	// fmt.Println("Title", currentSong.TitleSong)
+	// fmt.Println("lyrics :", currentSong.LyricsSong)
 }
-
-
-
-
-// var game = guessTheSong {
-// 	singer: GetLyrics(artist) ,
-	
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// package main
-
-// import (
-// 	"fmt"
-// )
-
-// func main(){
-// 	playlist := Api()
-// 	fmt.Println("PlayList ID", playlist)
-// }
-
-
