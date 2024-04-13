@@ -98,33 +98,45 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	password := r.FormValue("password")
 	confirmPassword := r.FormValue("confirmPassword")
 
-	if confirmPassword == password {
-		err := RegisterUser(db, username, password, email)
-		if err != nil {
-			if err.Error() == "Password incorrect" {
-				data := struct {
-					ErrorMessage string
-				}{
-					ErrorMessage: "Votre mot de passe doit contenir 12 caractères comprenant des majuscules, des minuscules, des chiffres et des caractères spéciaux.",
-				}
-				renderTemplate(w, "Register.html", data)
-			} else {
-				log.Print(err)
-				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-				return
-			}
-		} else {
-			rowsUsers := selectAllFromTable(db, "USER")
-			displayUserTable(rowsUsers) //--> show the table with the new user
-			http.Redirect(w, r, "/Home", http.StatusSeeOther)
+	if !UniqueUsername(username) { //username already used
+		data := struct {
+			ErrorMessage string
+		}{
+			ErrorMessage: "Ce pseudo est déjà utilisé, veuillez choisir un autre pseudo.",
 		}
-	} else {
+		renderTemplate(w, "Register.html", data)
+	} else if !UniqueEmail(email) { //email already used
+		data := struct {
+			ErrorMessage string
+		}{
+			ErrorMessage: "Cet email est déjà utilisé, veuillez choisir un autre email.",
+		}
+		renderTemplate(w, "Register.html", data)
+	} else if !VerifyPassword(password) { //password doesn't follow CNIL recommendations
+		data := struct {
+			ErrorMessage string
+		}{
+			ErrorMessage: "Votre mot de passe doit contenir 12 caractères comprenant des majuscules, des minuscules, des chiffres et des caractères spéciaux.",
+		}
+		renderTemplate(w, "Register.html", data)
+	} else if confirmPassword != password { //password and password confirmation don't match
 		data := struct {
 			ErrorMessage string
 		}{
 			ErrorMessage: "Le mot de passe et la confirmation du mot de passe ne correspondent pas.",
 		}
 		renderTemplate(w, "Register.html", data)
+	} else { //Account is valid, we can create it
+		err := RegisterUser(db, username, password, email)
+		if err != nil {
+			log.Print(err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		} else {
+			rowsUsers := selectAllFromTable(db, "USER")
+			displayUserTable(rowsUsers) //--> show the table with the new user
+			http.Redirect(w, r, "/Home", http.StatusSeeOther)
+		}
 	}
 }
 
@@ -159,13 +171,9 @@ func HashPassword(password string) string {
 }
 
 func RegisterUser(db *sql.DB, username, password, email string) error {
-	if !VerifyPassword(password) {
-		return fmt.Errorf("Password incorrect")
-	}
-
 	hashedPassword := HashPassword(password)
 
-	_, err := db.Exec("INSERT INTO USER (pseudo, email, password) VALUES (?, ?, ?)", username, email, hashedPassword)
+	_, err := db.Exec("INSERT INTO USER (pseudo, email, password) VALUES (?, ?, ?)", username, strings.ToLower(email), hashedPassword)
 	if err != nil {
 		return err
 	}
@@ -184,6 +192,46 @@ func VerifyPassword(password string) bool {
 
 	if ok, _ := regexp.MatchString(`[0-9]`, password); !ok {
 		return false
+	}
+
+	return true
+}
+
+func UniqueEmail(email string) bool {
+	db := initDatabase("USER")
+	defer db.Close()
+
+	rowsUsers := selectValueFromTable(db, "USER", "email")
+
+	for rowsUsers.Next() {
+		var userEmail string
+		err := rowsUsers.Scan(&userEmail)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if userEmail == email {
+			return false
+		}
+	}
+
+	return true
+}
+
+func UniqueUsername(username string) bool {
+	db := initDatabase("USER")
+	defer db.Close()
+
+	rowsUsers := selectValueFromTable(db, "USER", "pseudo")
+
+	for rowsUsers.Next() {
+		var userPseudo string
+		err := rowsUsers.Scan(&userPseudo)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if userPseudo == username {
+			return false
+		}
 	}
 
 	return true
@@ -252,6 +300,12 @@ func displayUserTable(rows *sql.Rows) {
 
 func selectAllFromTable(db *sql.DB, table string) *sql.Rows {
 	query := "SELECT * FROM " + table
+	result, _ := db.Query(query)
+	return result
+}
+
+func selectValueFromTable(db *sql.DB, table string, value string) *sql.Rows {
+	query := "SELECT " + value + " FROM " + table
 	result, _ := db.Query(query)
 	return result
 }
