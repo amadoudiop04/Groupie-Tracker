@@ -8,19 +8,20 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"regexp"
+	"strings"
 
 	_ "github.com/mattn/go-sqlite3"
 )
 
 func main() {
-
 	db := initDatabase("USER")
 	defer db.Close()
 
-	//db.Exec("DELETE FROM USER WHERE id > 0;") --> Remove some users
+	//db.Exec("DELETE FROM USER WHERE id > 0;") //--> Remove some users
 
 	rowsUsers := selectAllFromTable(db, "USER")
-	displayUserTable(rowsUsers) //--> See the table USER in terminal
+	displayUserTable(rowsUsers) //--> Show the table USER in terminal
 
 	http.HandleFunc("/", LoginPage)
 	http.HandleFunc("/LoginHandler", LoginHandler)
@@ -61,7 +62,6 @@ func LoginPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
-
 	username := r.FormValue("username")
 	password := r.FormValue("password")
 
@@ -90,22 +90,42 @@ func RegisterPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
-
 	db := initDatabase("USER")
 	defer db.Close()
 
 	username := r.FormValue("username")
 	email := r.FormValue("email")
 	password := r.FormValue("password")
+	confirmPassword := r.FormValue("confirmPassword")
 
-	err := RegisterUser(db, username, password, email)
-	if err != nil {
-		log.Print(err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
+	if confirmPassword == password {
+		err := RegisterUser(db, username, password, email)
+		if err != nil {
+			if err.Error() == "Password incorrect" {
+				data := struct {
+					ErrorMessage string
+				}{
+					ErrorMessage: "Votre mot de passe doit contenir 12 caractères comprenant des majuscules, des minuscules, des chiffres et des caractères spéciaux.",
+				}
+				renderTemplate(w, "Register.html", data)
+			} else {
+				log.Print(err)
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				return
+			}
+		} else {
+			rowsUsers := selectAllFromTable(db, "USER")
+			displayUserTable(rowsUsers) //--> show the table with the new user
+			http.Redirect(w, r, "/Home", http.StatusSeeOther)
+		}
+	} else {
+		data := struct {
+			ErrorMessage string
+		}{
+			ErrorMessage: "Le mot de passe et la confirmation du mot de passe ne correspondent pas.",
+		}
+		renderTemplate(w, "Register.html", data)
 	}
-
-	http.Redirect(w, r, "/Home", http.StatusSeeOther)
 }
 
 func PasswordForgottenPage(w http.ResponseWriter, r *http.Request) {
@@ -139,8 +159,11 @@ func HashPassword(password string) string {
 }
 
 func RegisterUser(db *sql.DB, username, password, email string) error {
+	if !VerifyPassword(password) {
+		return fmt.Errorf("Password incorrect")
+	}
+
 	hashedPassword := HashPassword(password)
-	fmt.Println(password + " --> " + hashedPassword)
 
 	_, err := db.Exec("INSERT INTO USER (pseudo, email, password) VALUES (?, ?, ?)", username, email, hashedPassword)
 	if err != nil {
@@ -150,12 +173,27 @@ func RegisterUser(db *sql.DB, username, password, email string) error {
 	return nil
 }
 
+func VerifyPassword(password string) bool {
+	if len(password) < 12 || strings.ToUpper(password) == password {
+		return false
+	}
+
+	if ok, _ := regexp.MatchString(`[!@#$%^&*()_+{}\[\]:;<>,.?/~\-]`, password); !ok {
+		return false
+	}
+
+	if ok, _ := regexp.MatchString(`[0-9]`, password); !ok {
+		return false
+	}
+
+	return true
+}
+
 func AuthenticateUser(username, password string) (bool, error) {
 	db := initDatabase("USER")
 	defer db.Close()
 
 	hashedPassword := HashPassword(password)
-	fmt.Println(password + " --> " + hashedPassword)
 
 	var storedPassword string
 	query := "SELECT password FROM USER WHERE pseudo = ? OR email = ?"

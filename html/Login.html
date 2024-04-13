@@ -6,9 +6,9 @@
     <meta http-equiv="X-UA-Compatible" Content="IE-edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title> Groupie Tracker </title>
-    <link rel="stylesheet" href="../static/login.css">
+    <link rel="stylesheet" href="../static/css/login.css">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
-</head>
+</head> 
 
 <body>
     <div class="wrapper">
@@ -22,6 +22,8 @@
 
                 <div class="input-box">
                     <input name="password" id="password" type="password" placeholder="Mot de passe" required>
+                    <i class="bx bx-show" id="showPasswordIcon1" style="margin-right: 25px; cursor: pointer;"></i> 
+                    <i class='bx bx-hide' id="hidePasswordIcon1" style="margin-right: 25px; cursor: pointer; display: none;"></i>
                     <i class='bx bxs-lock-alt' ></i>
                 </div>
 
@@ -29,7 +31,7 @@
                     <a href="/PasswordForgotten">Mot de passe oublié</a>
                 </div>
                 {{if .ErrorMessage}}
-                <p style="color: red;">{{.ErrorMessage}}</p>
+                <p style="color: rgb(255, 24, 24); text-align: center; margin-bottom: 10px;">{{.ErrorMessage}}</p>
                 {{end}}
 
                 <button type="sumbit" class="btn">Se connecter</button>
@@ -40,5 +42,7 @@
             </form>
     </div>
 </body>
+
+<script src="../static/js/showPassword.js"></script>
     
 </html>
