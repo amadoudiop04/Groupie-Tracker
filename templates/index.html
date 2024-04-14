@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -7,16 +8,22 @@
     <title>Guess the song</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,300..700;1,300..700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,300..700;1,300..700&display=swap"
+        rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Satisfy&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="../static/style.css">
 </head>
+
 <body>
     <div class="title-top">Guess the song 🎼</div>
     <div class="scoreBoard">
-        20/100Pts
+        {{.Scores}}/50Pts
+        {{.RemainingAttempts}}Attempts
+        <div id="timer"> s</div>
     </div>
+
     <div class="player">
         <div class="lyrics">
             <div class="divParoles">
@@ -27,9 +34,9 @@
             <div class="details">
                 <div class="now-playing">🔈🔉🔊🎶</div>
                 <div class="track-art" id="rotate">
-                     {{if .ImageURL}}
-                      <img src="{{.ImageURL}}" alt="Artist Image">
-                  {{end}}
+                    {{if .ImageURL}}
+                    <img src="{{.ImageURL}}" alt="Artist Image">
+                    {{end}}
                 </div>
                 <div class="track-name">
                     {{.Singer}}
@@ -41,24 +48,24 @@
 
             <div class="container">
                 <span class="wave"></span>
-                <span class="wave" ></span>
-                <span class="wave" ></span>
-                <span class="wave" ></span>
-                <span class="wave" ></span>
+                <span class="wave"></span>
+                <span class="wave"></span>
+                <span class="wave"></span>
+                <span class="wave"></span>
             </div>
 
             <div class="buttons">
                 <div class="prev-track">
-                        <button class="fa fa-step-backward fa-2x" ></button>
+                    <button class="fa fa-step-backward fa-2x" onclick="previousTrack()"></button>
                 </div>
                 <div class="playpause-track">
-                    <button class="far fa-play-circle fa-5x" ></button>
+                    <button class="far fa-play-circle fa-5x"></button>
                 </div>
-                <div class="next-track" >
-                    <button class="fas fa-step-forward fa-2x" ></button>
+                <div class="next-track">
+                    <button class="fas fa-step-forward fa-2x" onclick="nextTrack()"></button>
                 </div>
-                <div class="repeat-track" >
-                    <button class="fa fa-repeat fa-2x" title="repeat" ></button>
+                <div class="repeat-track">
+                    <button class="fa fa-repeat fa-2x" title="repeat" onclick="restartPlaylist()"></button>
                 </div>
             </div>
             <form action="" method="post">
@@ -70,4 +77,16 @@
         </div>
     </div>
 </body>
+<script>
+    function updateTimer() {
+        fetch('/timer')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('timer').innerText = data.time + "secondes";
+            });
+        console.log("refresh");
+    }
+    setInterval(updateTimer, 1000); 
+</script>
+
 </html>

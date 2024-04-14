@@ -154,14 +154,11 @@
     }
 
     .scoreBoard {
-      display: flex;
-      justify-content: center;
-      align-items: center;
       color: #ddd;
       border: solid 3px;
       border-radius: 10px;
-      height: 50px;
-      width: 85px;
+      height: auto;
+      width: 5.6%;
     }
 
     .lyrics {

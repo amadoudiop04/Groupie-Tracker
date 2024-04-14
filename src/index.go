@@ -9,10 +9,13 @@ import (
 )
 
 type Song struct {
-	Singer     string
-	TitleSong  string
-	LyricsSong string
-	ImageURL   string
+	Singer            string
+	TitleSong         string
+	LyricsSong        string
+	ImageURL          string
+	Scores            int
+	RemainingAttempts int
+	Timer             int
 }
 
 type LyricsResponse struct {
@@ -20,10 +23,13 @@ type LyricsResponse struct {
 }
 
 var CurrentSong = Song{
-	Singer:     "",
-	TitleSong:  "",
-	LyricsSong: "",
-	ImageURL:   "",
+	Singer:            "",
+	TitleSong:         "",
+	LyricsSong:        "",
+	ImageURL:          "",
+	Scores:            0,
+	RemainingAttempts: 5,
+	Timer:             60,
 }
 
 func GetLyrics(artist, title string) (string, error) {
@@ -53,7 +59,7 @@ func GetLyrics(artist, title string) (string, error) {
 
 func LoadData() {
 	track := Api()
-	artist := getArtistsNames(track.Artists)
+	artist := GetArtistsNames(track.Artists)
 	title := track.Name
 
 	lyrics, err := GetLyrics(artist, title)
