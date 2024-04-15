@@ -29,6 +29,10 @@ func main() {
 	http.HandleFunc("/RegisterHandler", RegisterHandler)
 	http.HandleFunc("/PasswordForgotten", PasswordForgottenPage)
 	http.HandleFunc("/PasswordForgottenHandler", PasswordForgottenHandler)
+	http.HandleFunc("/AccountRecovery", AccountRecoveryPage)
+	http.HandleFunc("/AccountRecoveryHandler", AccountRecoveryHandler)
+	http.HandleFunc("/ResetPassword", ResetPasswordPage)
+	http.HandleFunc("/ResetPasswordHandler", ResetPasswordHandler)
 	http.HandleFunc("/Home", HomePage)
 	http.HandleFunc("/Blindtest", Blindtest)
 	http.HandleFunc("/Deaftest", Deaftest)
@@ -145,7 +149,78 @@ func PasswordForgottenPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func PasswordForgottenHandler(w http.ResponseWriter, r *http.Request) {
+	db := initDatabase("USER")
+	defer db.Close()
+
+	email := r.FormValue("email")
+
+	userExists := false
+	query := "SELECT email FROM USER WHERE email = ?"
+	err := db.QueryRow(query, email).Scan(&email)
+	if err == nil {
+		userExists = true
+	} else if err != sql.ErrNoRows {
+		log.Print(err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	if !userExists {
+		data := struct {
+			ErrorMessage string
+		}{
+			ErrorMessage: "Cet email n'est associé à aucun compte.",
+		}
+		renderTemplate(w, "PasswordForgotten.html", data)
+	} else {
+		http.Redirect(w, r, "/AccountRecovery", http.StatusSeeOther)
+	}
+
+}
+
+func AccountRecoveryPage(w http.ResponseWriter, r *http.Request) {
 	renderTemplate(w, "AccountRecovery.html", nil)
+}
+
+func AccountRecoveryHandler(w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, "/ResetPassword", http.StatusSeeOther)
+}
+
+func ResetPasswordPage(w http.ResponseWriter, r *http.Request) {
+	renderTemplate(w, "ResetPassword.html", nil)
+}
+
+func ResetPasswordHandler(w http.ResponseWriter, r *http.Request) {
+	db := initDatabase("USER")
+	defer db.Close()
+
+	password := r.FormValue("password")
+	confirmPassword := r.FormValue("confirmPassword")
+
+	if password != confirmPassword {
+		data := struct {
+			ErrorMessage string
+		}{
+			ErrorMessage: "Le mot de passe et la confirmation du mot de passe ne correspondent pas.",
+		}
+		renderTemplate(w, "ResetPassword.html", data)
+	} else if !VerifyPassword(password) {
+		data := struct {
+			ErrorMessage string
+		}{
+			ErrorMessage: "Votre mot de passe doit contenir 12 caractères comprenant des majuscules, des minuscules, des chiffres et des caractères spéciaux.",
+		}
+		renderTemplate(w, "ResetPassword.html", data)
+	} else {
+		//updateQuery := "UPDATE USER SET password = ? WHERE email = ?"     // --> find a way to change the wright user (have to register the email)
+		//_, err := db.Exec(updateQuery, password, email)
+		//if err != nil {
+		//	log.Print(err)
+		//	http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		//	return
+		//}
+		http.Redirect(w, r, "/Home", http.StatusSeeOther)
+	}
 }
 
 func HomePage(w http.ResponseWriter, r *http.Request) {
@@ -163,6 +238,8 @@ func Deaftest(w http.ResponseWriter, r *http.Request) {
 func Petitbac(w http.ResponseWriter, r *http.Request) {
 	renderTemplate(w, "Petitbac.html", nil)
 }
+
+//Usefull functions
 
 func HashPassword(password string) string {
 	hasher := sha256.New()
@@ -256,6 +333,8 @@ func AuthenticateUser(username, password string) (bool, error) {
 	return storedPassword == hashedPassword, nil
 }
 
+//Database functions
+
 func initDatabase(database string) *sql.DB {
 	db, err := sql.Open("sqlite3", database)
 
@@ -280,13 +359,6 @@ func initDatabase(database string) *sql.DB {
 	return db
 }
 
-type User struct {
-	id       int
-	pseudo   string
-	email    string
-	password string
-}
-
 func displayUserTable(rows *sql.Rows) {
 	for rows.Next() {
 		var users User
@@ -308,4 +380,13 @@ func selectValueFromTable(db *sql.DB, table string, value string) *sql.Rows {
 	query := "SELECT " + value + " FROM " + table
 	result, _ := db.Query(query)
 	return result
+}
+
+//structures
+
+type User struct {
+	id       int
+	pseudo   string
+	email    string
+	password string
 }
