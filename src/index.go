@@ -6,6 +6,8 @@ import (
 	"io"
 	"log"
 	"net/http"
+
+	"github.com/zmb3/spotify"
 )
 
 type Song struct {
@@ -16,6 +18,7 @@ type Song struct {
 	Scores            int
 	RemainingAttempts int
 	Timer             int
+	ThePlaylist       *spotify.FullPlaylist
 }
 
 type LyricsResponse struct {
@@ -29,7 +32,8 @@ var CurrentSong = Song{
 	ImageURL:          "",
 	Scores:            0,
 	RemainingAttempts: 5,
-	Timer:             60,
+	Timer:             30,
+	ThePlaylist:       nil,
 }
 
 func GetLyrics(artist, title string) (string, error) {

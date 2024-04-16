@@ -4,16 +4,11 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/binary"
-	"errors"
+	// "errors"
 	"fmt"
 	"github.com/zmb3/spotify"
 	"golang.org/x/oauth2/clientcredentials"
 	"log"
-)
-
-var (
-	playlist     *spotify.FullPlaylist
-	currentIndex int
 )
 
 type dataImage struct {
@@ -23,6 +18,11 @@ type dataImage struct {
 var data = dataImage{
 	imageUrl: "",
 }
+
+var GameIndex int
+var MyPlaylist *spotify.FullPlaylist
+var track *spotify.FullTrack
+
 
 func Api() *spotify.FullTrack {
 	authConfig := &clientcredentials.Config{
@@ -38,8 +38,9 @@ func Api() *spotify.FullTrack {
 
 	client := spotify.Authenticator{}.NewClient(accessToken)
 
-	playlistID := spotify.ID("37i9dQZF1DWT0W2NVqAFjU?si=0363f4727b854b2b")
+	playlistID := spotify.ID("37i9dQZF1E37xpTgH5tN1Z?si=e6ee0165030640af")
 	playlist, err := client.GetPlaylist(playlistID)
+	MyPlaylist = playlist
 	if err != nil {
 		log.Fatalf("error retrieve playlist data: %v", err)
 	}
@@ -47,12 +48,15 @@ func Api() *spotify.FullTrack {
 	log.Println("playlist id:", playlist.ID)
 	log.Println("playlist name:", playlist.Name)
 	log.Println("playlist description:", playlist.Description)
+	//log.Println(" le fameu playlist", playlist)
+	//log.Println(" le fameu playlist", MyPlaylist)
 
-	var track *spotify.FullTrack
-
+	
 	for {
 		max := len(playlist.Tracks.Tracks)
 		randomIndex := GetRandomIndex(max)
+
+		GameIndex = randomIndex
 
 		track = &playlist.Tracks.Tracks[randomIndex].Track
 
@@ -109,21 +113,24 @@ func GetArtistsNames(artists []spotify.SimpleArtist) string {
 	return fmt.Sprintf("%v", names)
 }
 
-func NextTrack() (*spotify.FullTrack, error) {
-	currentIndex = (currentIndex + 1) % len(playlist.Tracks.Tracks)
-	return &playlist.Tracks.Tracks[currentIndex].Track, nil
-}
-
-func PreviousTrack() (*spotify.FullTrack, error) {
-	currentIndex = (currentIndex - 1 + len(playlist.Tracks.Tracks)) % len(playlist.Tracks.Tracks)
-	return &playlist.Tracks.Tracks[currentIndex].Track, nil
-}
-
-func RestartPlaylist() error {
-	newIndex := GetRandomIndex(len(playlist.Tracks.Tracks))
-	if newIndex < 0 || newIndex >= len(playlist.Tracks.Tracks) {
-		return errors.New("invalid index")
+func NextTrack(playlist *spotify.FullPlaylist) *spotify.FullTrack {
+	GameIndex = (GameIndex + 1) % len(playlist.Tracks.Tracks)
+	if GameIndex < 0 {
+		GameIndex = 0
 	}
-	currentIndex = newIndex
-	return nil
+	return &playlist.Tracks.Tracks[GameIndex].Track
 }
+
+// func PreviousTrack(playlist *spotify.FullPlaylist) (*spotify.FullTrack, error) {
+// 	GameIndex = (GameIndex - 1 + len(playlist.Tracks.Tracks)) % len(playlist.Tracks.Tracks)
+// 	return &playlist.Tracks.Tracks[GameIndex].Track, nil
+// }
+
+// func RestartPlaylist(playlist *spotify.FullPlaylist) error {
+// 	newIndex := GetRandomIndex(len(playlist.Tracks.Tracks))
+// 	if newIndex < 0 || newIndex >= len(playlist.Tracks.Tracks) {
+// 		return errors.New("invalid index")
+// 	}
+// 	GameIndex = newIndex
+// 	return nil
+// }

@@ -1,5 +1,6 @@
 body{
     background: rgb(39, 38, 38);
+    height: 100%;
     overflow: hidden;
 }
 
@@ -44,9 +45,12 @@ body{
 .div-btn,.div-img{
     display: flex;
     justify-content: center;
+    margin: 3% auto;
 }
 
 .imgGif{
-    border-radius: 150px;
+    max-width: 100%;
+    height: auto;
+    border-radius: 150%;
     margin: 5%;
 }

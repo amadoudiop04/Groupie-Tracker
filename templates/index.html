@@ -27,6 +27,7 @@
     <div class="player">
         <div class="lyrics">
             <div class="divParoles">
+                <a href="/info">info❗</a>
                 {{.LyricsSong}}
             </div>
         </div>
@@ -55,27 +56,36 @@
             </div>
 
             <div class="buttons">
-                <div class="prev-track">
-                    <button class="fa fa-step-backward fa-2x" onclick="previousTrack()"></button>
-                </div>
-                <div class="playpause-track">
-                    <button class="far fa-play-circle fa-5x"></button>
-                </div>
-                <div class="next-track">
-                    <button class="fas fa-step-forward fa-2x" onclick="nextTrack()"></button>
-                </div>
-                <div class="repeat-track">
-                    <button class="fa fa-repeat fa-2x" title="repeat" onclick="restartPlaylist()"></button>
-                </div>
+
+                <form method="post" action="/">
+                    <div class="prev-track">
+                        <button class="fa fa-step-backward fa-2x" name="action" value="previous"></button>
+                    </div>
+                </form>
+
+                <form method="post" action="/">
+                    <div class="playpause-track">
+                        <button class="far fa-play-circle fa-5x" name="action" value="playPause"></button>
+                    </div>
+                </form>
+
+                <form method="post" action="/">
+                    <div class="next-track">
+                        <button class="fas fa-step-forward fa-2x" name="action" value="next"></button>
+                    </div>
+                </form>
+
             </div>
-            <form action="" method="post">
+
+            <form action="/" method="post">
                 <div class="inputResquest">
                     <input class="requestSong" type="text" placeholder="Music Name..." name="value" autocomplete="off">
-                    <button class="mybtn" type="submit">Send</button>
+                    <button class="Mybtn" type="submit">Send</button>
                 </div>
             </form>
         </div>
     </div>
+   
 </body>
 <script>
     function updateTimer() {
