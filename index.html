@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="static/style.css">
+    <title>Blind Test</title>
+</head>
+<body>
+    <div class="scoreboard">
+        <h2>Point :</h2>
+        <h2>User :</h2>
+    </div>
+    <center><h1>Blind Test</h1>
+    
+    <div>
+        <p>{{ .Track.Name }} - 
+        {{ range $index, $artist := .Track.Artists }}
+        {{ if $index }}, {{ end }}
+        {{ $artist.Name }}
+        {{ end }}</p>
+        <audio controls>
+            <source src="{{ .Track.PreviewURL }}" type="audio/mpeg">
+        </audio>
+        <form action="/" method="post">
+            <input type="text" name="value" placeholder="Votre réponse...">
+            <button type="submit">Soumettre</button>
+        </form>
+    </div>
+    </center>
+</body>
+</html>

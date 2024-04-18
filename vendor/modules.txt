@@ -1,0 +1,14 @@
+# github.com/golang/protobuf v1.2.0
+## explicit
+# github.com/zmb3/spotify v1.3.0
+## explicit; go 1.14
+github.com/zmb3/spotify
+# golang.org/x/net v0.0.0-20190108225652-1e06a53dbb7e
+## explicit
+# golang.org/x/oauth2 v0.19.0
+## explicit; go 1.18
+golang.org/x/oauth2
+golang.org/x/oauth2/clientcredentials
+golang.org/x/oauth2/internal
+# google.golang.org/appengine v1.4.0
+## explicit
