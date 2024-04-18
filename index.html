@@ -1,32 +1,61 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400..700&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="static/style.css">
     <title>Blind Test</title>
 </head>
 <body>
-    <div class="scoreboard">
-        <h2>Point :</h2>
-        <h2>User :</h2>
-    </div>
-    <center><h1>Blind Test</h1>
-    
-    <div>
+    <h1 class="title-top">Blind Test</h1>
+                <div class="scoreboard">
+                 <h2>0/Points</h2>
+                <h2>.../Users</h2>
+                 </div>
+   
+                 <div class="container-block">
+        <div class="audioContainer" >
+            <div class="deco-Img">
+            </div>
+
         <p>{{ .Track.Name }} - 
         {{ range $index, $artist := .Track.Artists }}
         {{ if $index }}, {{ end }}
         {{ $artist.Name }}
         {{ end }}</p>
+
+        <div class="myAudio">
         <audio controls>
             <source src="{{ .Track.PreviewURL }}" type="audio/mpeg">
         </audio>
+         </div>
+
+         <div class="container">
+            <div class="wave"></div>
+            <div class="wave"></div>
+            <div class="wave"></div>
+            <div class="wave"></div>
+            <div class="wave"></div>
+         </div>
+      
         <form action="/" method="post">
-            <input type="text" name="value" placeholder="Votre réponse...">
-            <button type="submit">Soumettre</button>
-        </form>
+            <div class="inputContainer">
+             <input class="myInput" type="text" name="value" placeholder="Your response">
+              </div> 
+             <div>
+             <button  class="mybtn" type="submit">Send</button>
+             </div>
+         </form>
+         
+     </div>
+
     </div>
-    </center>
+        
+   
+
 </body>
 </html>

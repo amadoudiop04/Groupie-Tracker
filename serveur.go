@@ -3,81 +3,81 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/zmb3/spotify"
+	"golang.org/x/oauth2/clientcredentials"
 	"html/template"
 	"log"
 	"net/http"
-	"github.com/zmb3/spotify"
-	"golang.org/x/oauth2/clientcredentials"
 )
 
 type PageData struct {
-    Track *spotify.SimpleTrack
+	Track *spotify.SimpleTrack
 }
 
 var currentTrackIndex int
 
-func main() {
-    http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-        if r.Method == "POST" {
-            input := r.FormValue("value")
-            currentTrack := api()[currentTrackIndex]
+func api() []*spotify.SimpleTrack {
+	authConfig := &clientcredentials.Config{
+		ClientID:     "42d26f90ce1b486f96349f3f8f9cf94c",
+		ClientSecret: "23166304a010453a9a31f5c93e625cd3",
+		TokenURL:     spotify.TokenURL,
+	}
 
-            if input == currentTrack.Name {
-                currentTrackIndex++
-                if currentTrackIndex >= len(api()) {
-                    currentTrackIndex = 0
-                }
-            }
-            fmt.Println(input)
-        }
-        
-        tpl := template.Must(template.ParseFiles("index.html"))
-        
-        track := api()[currentTrackIndex]
-        data := PageData{Track: track}
-        
-        if err := tpl.Execute(w, data); err != nil {
-            http.Error(w, err.Error(), http.StatusInternalServerError)
-            return
-        }
-    })
-    fs := http.FileServer(http.Dir("./static/"))
-    http.Handle("/static/", http.StripPrefix("/static/", fs))
-    log.Println("Server started on :8080")
-    log.Fatal(http.ListenAndServe(":8080", nil))
+	accessToken, err := authConfig.Token(context.Background())
+	if err != nil {
+		log.Fatalf("error retrieving access token: %v", err)
+	}
+
+	client := spotify.Authenticator{}.NewClient(accessToken)
+
+	playlistID := spotify.ID("37i9dQZF1DX9PXZbuB8BjJ")
+	playlist, err := client.GetPlaylist(playlistID)
+	if err != nil {
+		log.Fatalf("error retrieving playlist data: %v", err)
+	}
+
+	var tracks []*spotify.SimpleTrack
+	for _, playlistTrack := range playlist.Tracks.Tracks {
+		track := playlistTrack.Track
+
+		simpleTrack := &spotify.SimpleTrack{
+			ID:         track.ID,
+			Name:       track.Name,
+			Artists:    track.Artists,
+			PreviewURL: track.PreviewURL,
+		}
+		tracks = append(tracks, simpleTrack)
+	}
+	return tracks
 }
 
-func api() []*spotify.SimpleTrack {
-    authConfig := &clientcredentials.Config{
-        ClientID:     "42d26f90ce1b486f96349f3f8f9cf94c",
-        ClientSecret: "23166304a010453a9a31f5c93e625cd3",
-        TokenURL:     spotify.TokenURL,
-    }
+func main() {
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "POST" {
+			input := r.FormValue("value")
+			currentTrack := api()[currentTrackIndex]
 
-    accessToken, err := authConfig.Token(context.Background())
-    if err != nil {
-        log.Fatalf("error retrieving access token: %v", err)
-    }
+			if input == currentTrack.Name {
+				currentTrackIndex++
+				if currentTrackIndex >= len(api()) {
+					currentTrackIndex = 0
+				}
+			}
+			fmt.Println(input)
+		}
 
-    client := spotify.Authenticator{}.NewClient(accessToken)
+		tpl := template.Must(template.ParseFiles("index.html"))
 
-    playlistID := spotify.ID("37i9dQZF1DX9PXZbuB8BjJ")
-    playlist, err := client.GetPlaylist(playlistID)
-    if err != nil {
-        log.Fatalf("error retrieving playlist data: %v", err)
-    }
+		track := api()[currentTrackIndex]
+		data := PageData{Track: track}
 
-    var tracks []*spotify.SimpleTrack
-    for _, playlistTrack := range playlist.Tracks.Tracks {
-        track := playlistTrack.Track
-
-        simpleTrack := &spotify.SimpleTrack{
-            ID:         track.ID,
-            Name:       track.Name,
-            Artists:    track.Artists,
-            PreviewURL: track.PreviewURL,
-        }
-        tracks = append(tracks, simpleTrack)
-    }
-    return tracks
+		if err := tpl.Execute(w, data); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	})
+	fs := http.FileServer(http.Dir("./static/"))
+	http.Handle("/static/", http.StripPrefix("/static/", fs))
+	log.Println("Server started on :8080")
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }

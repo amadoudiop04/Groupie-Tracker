@@ -2,60 +2,137 @@ body {
     margin: 0;
     padding: 0;
     font-family: Arial, sans-serif;
-    background-color: #f7f7f7;
+    background: rgb(39, 38, 38);
     color: #333;
+    height: 100%;
+    overflow: hidden;
 }
 
-.container {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 20px;
-}
 
 .scoreboard {
-    background-color: #fff;
-    padding: 10px;
-    border: 1px solid #ccc;
+    justify-content: center;
+    align-items: center;
+    border: 2px solid #ccc;
+    color: white;
     position: fixed;
+    border-radius: 10px;
     top: 10px;
     right: 10px;
     z-index: 999;
 }
 
-h1 {
-    text-align: center;
-    margin-top: 50px;
+.title-top{
+    color: aliceblue    ;
+    display: flex;
+    justify-content: center;
+    font-family: "Dancing Script", cursive;
+    font-optical-sizing: auto;
+    font-weight: 400;
+    font-style: normal;
 }
 
-ol {
-    margin-top: 100px;
+.myInput,.mybtn{
+border-radius: 20px;
 }
 
-audio {
-    width: 100%;
+.myInput{
+   font-size: 1.5   em;
 }
 
-button[type="submit"] {
-    display: block;
-    margin: 20px auto 0;
-    padding: 10px 20px;
-    background-color: #4CAF50;
+.mybtn{
     color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
+    font-size: 1.5em;
+    background-color:  rgb(21, 124, 220);
 }
 
-input[type="text"] {
-    width: 100%;
-    padding: 10px;
-    box-sizing: border-box;
-    border: 1px solid #ccc;
-    border-radius: 5px;
+.inputContainer{
+    text-align: center;
+    margin: 5px;
 }
 
-@media (max-width: 600px) {
-    .container {
-        padding: 10px;
+.audioContainer{
+    align-content: center;
+    text-align: center;
+    background: linear-gradient(to bottom right,#50ffd3,#6A5ACD);
+    border-radius: 20px;
+     height: 450px;
+     width: 50%; 
+}
+
+.myAudio{
+    display: flex;
+    justify-content: center;
+}
+
+.container-block{
+display: flex;
+justify-content: center;
+margin: 7%;
+}
+
+
+.container {
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 3%;
+  }
+
+.wave {
+    height: 0px;
+    width: 10px;
+    border-radius: 20px;
+    background: white;
+    display: inline-block;
+    margin: 0px 20px;
+    animation: waveloader 2s infinite linear;
+  }
+
+
+
+  .wave:nth-child(1) {
+    animation-delay: 0s;
+  }
+
+  .wave:nth-child(2) {
+    animation-delay: 0.5s;
+  }
+
+  .wave:nth-child(3) {
+    animation-delay: 1.0s;
+  }
+
+  .wave:nth-child(4) {
+    animation-delay: 1.5s;
+  }
+
+  .wave:nth-child(5) {
+    animation-delay: 2s;
+  }
+
+
+  @keyframes waveloader {
+    50% {
+      height: 20%;
     }
-}
+
+    100% {
+      height: 100%;
+    }
+  }
+
+  .deco-Img{
+    transform: translateX(118%);
+    border: solid 1px black;
+    height: 30%;
+    width: 30%;
+    border-radius: 50%;
+    -moz-box-shadow: 0px 6px 5px black;
+    -webkit-box-shadow: 0px 6px 5px black;
+    box-shadow: 0px 6px 5px black;
+    -moz-border-radius: 190px;
+    -webkit-border-radius: 190px;
+    background: center / cover no-repeat  url("../img/Blind-Test-removebg-preview.png");
+
+  }
