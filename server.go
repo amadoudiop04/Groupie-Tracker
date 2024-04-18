@@ -1,27 +1,27 @@
 package main
 
 import (
-	"crypto/sha256"
 	"database/sql"
-	"encoding/hex"
 	"fmt"
 	"html/template"
 	"log"
 	"net/http"
-	"regexp"
+	"net/smtp"
 	"strings"
+
+	"./database"
 
 	_ "github.com/mattn/go-sqlite3"
 )
 
 func main() {
-	db := initDatabase("USER")
+	db := database.InitDatabase("USER")
 	defer db.Close()
 
 	//db.Exec("DELETE FROM USER WHERE id > 0;") //--> Remove some users
 
-	rowsUsers := selectAllFromTable(db, "USER")
-	displayUserTable(rowsUsers) //--> Show the table USER in terminal
+	rowsUsers := database.SelectAllFromTable(db, "USER")
+	database.DisplayUserTable(rowsUsers) //--> Show the table USER in terminal
 
 	http.HandleFunc("/", LoginPage)
 	http.HandleFunc("/LoginHandler", LoginHandler)
@@ -69,7 +69,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	username := r.FormValue("username")
 	password := r.FormValue("password")
 
-	canConnect, err := AuthenticateUser(username, password)
+	canConnect, err := database.AuthenticateUser(username, password)
 	if err != nil {
 		log.Print(err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -94,7 +94,7 @@ func RegisterPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
-	db := initDatabase("USER")
+	db := database.InitDatabase("USER")
 	defer db.Close()
 
 	username := r.FormValue("username")
@@ -102,21 +102,21 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	password := r.FormValue("password")
 	confirmPassword := r.FormValue("confirmPassword")
 
-	if !UniqueUsername(username) { //username already used
+	if !database.UniqueUsername(username) { //username already used
 		data := struct {
 			ErrorMessage string
 		}{
 			ErrorMessage: "Ce pseudo est déjà utilisé, veuillez choisir un autre pseudo.",
 		}
 		renderTemplate(w, "Register.html", data)
-	} else if !UniqueEmail(email) { //email already used
+	} else if !database.UniqueEmail(email) { //email already used
 		data := struct {
 			ErrorMessage string
 		}{
 			ErrorMessage: "Cet email est déjà utilisé, veuillez choisir un autre email.",
 		}
 		renderTemplate(w, "Register.html", data)
-	} else if !VerifyPassword(password) { //password doesn't follow CNIL recommendations
+	} else if !database.VerifyPassword(password) { //password doesn't follow CNIL recommendations
 		data := struct {
 			ErrorMessage string
 		}{
@@ -131,14 +131,14 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		renderTemplate(w, "Register.html", data)
 	} else { //Account is valid, we can create it
-		err := RegisterUser(db, username, password, email)
+		err := database.RegisterUser(db, username, password, email)
 		if err != nil {
 			log.Print(err)
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		} else {
-			rowsUsers := selectAllFromTable(db, "USER")
-			displayUserTable(rowsUsers) //--> show the table with the new user
+			rowsUsers := database.SelectAllFromTable(db, "USER")
+			database.DisplayUserTable(rowsUsers) //--> show the table with the new user
 			http.Redirect(w, r, "/Home", http.StatusSeeOther)
 		}
 	}
@@ -149,10 +149,10 @@ func PasswordForgottenPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func PasswordForgottenHandler(w http.ResponseWriter, r *http.Request) {
-	db := initDatabase("USER")
+	db := database.InitDatabase("USER")
 	defer db.Close()
 
-	email := r.FormValue("email")
+	email := strings.ReplaceAll(r.FormValue("email"), " ", "")
 
 	userExists := false
 	query := "SELECT email FROM USER WHERE email = ?"
@@ -173,9 +173,35 @@ func PasswordForgottenHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		renderTemplate(w, "PasswordForgotten.html", data)
 	} else {
+		// Sender data
+		from := "help.groupietracker@gmail.com"
+		password := "GTamyagoGT"
+
+		// Receiver email address
+		to := []string{email}
+
+		// smtp server configuration
+		smtpHost := "smtp.gmail.com"
+		smtpPort := "587"
+
+		// Code
+		code := "5846"
+
+		// Message
+		message := []byte(code)
+
+		// Authentication
+		auth := smtp.PlainAuth("", from, password, smtpHost)
+
+		// Sending email
+		err := smtp.SendMail(smtpHost+":"+smtpPort, auth, from, to, message)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		fmt.Println("Email Sent Successfully!")
 		http.Redirect(w, r, "/AccountRecovery", http.StatusSeeOther)
 	}
-
 }
 
 func AccountRecoveryPage(w http.ResponseWriter, r *http.Request) {
@@ -191,7 +217,7 @@ func ResetPasswordPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func ResetPasswordHandler(w http.ResponseWriter, r *http.Request) {
-	db := initDatabase("USER")
+	db := database.InitDatabase("USER")
 	defer db.Close()
 
 	password := r.FormValue("password")
@@ -204,7 +230,7 @@ func ResetPasswordHandler(w http.ResponseWriter, r *http.Request) {
 			ErrorMessage: "Le mot de passe et la confirmation du mot de passe ne correspondent pas.",
 		}
 		renderTemplate(w, "ResetPassword.html", data)
-	} else if !VerifyPassword(password) {
+	} else if !database.VerifyPassword(password) {
 		data := struct {
 			ErrorMessage string
 		}{
@@ -237,156 +263,4 @@ func Deaftest(w http.ResponseWriter, r *http.Request) {
 
 func Petitbac(w http.ResponseWriter, r *http.Request) {
 	renderTemplate(w, "Petitbac.html", nil)
-}
-
-//Usefull functions
-
-func HashPassword(password string) string {
-	hasher := sha256.New()
-	hasher.Write([]byte(password))
-	return hex.EncodeToString(hasher.Sum(nil))
-}
-
-func RegisterUser(db *sql.DB, username, password, email string) error {
-	hashedPassword := HashPassword(password)
-
-	_, err := db.Exec("INSERT INTO USER (pseudo, email, password) VALUES (?, ?, ?)", username, strings.ToLower(email), hashedPassword)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func VerifyPassword(password string) bool {
-	if len(password) < 12 || strings.ToUpper(password) == password {
-		return false
-	}
-
-	if ok, _ := regexp.MatchString(`[!@#$%^&*()_+{}\[\]:;<>,.?/~\-]`, password); !ok {
-		return false
-	}
-
-	if ok, _ := regexp.MatchString(`[0-9]`, password); !ok {
-		return false
-	}
-
-	return true
-}
-
-func UniqueEmail(email string) bool {
-	db := initDatabase("USER")
-	defer db.Close()
-
-	rowsUsers := selectValueFromTable(db, "USER", "email")
-
-	for rowsUsers.Next() {
-		var userEmail string
-		err := rowsUsers.Scan(&userEmail)
-		if err != nil {
-			log.Fatal(err)
-		}
-		if userEmail == email {
-			return false
-		}
-	}
-
-	return true
-}
-
-func UniqueUsername(username string) bool {
-	db := initDatabase("USER")
-	defer db.Close()
-
-	rowsUsers := selectValueFromTable(db, "USER", "pseudo")
-
-	for rowsUsers.Next() {
-		var userPseudo string
-		err := rowsUsers.Scan(&userPseudo)
-		if err != nil {
-			log.Fatal(err)
-		}
-		if userPseudo == username {
-			return false
-		}
-	}
-
-	return true
-}
-
-func AuthenticateUser(username, password string) (bool, error) {
-	db := initDatabase("USER")
-	defer db.Close()
-
-	hashedPassword := HashPassword(password)
-
-	var storedPassword string
-	query := "SELECT password FROM USER WHERE pseudo = ? OR email = ?"
-	err := db.QueryRow(query, username, username).Scan(&storedPassword)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return false, nil
-		}
-		return false, err
-	}
-
-	return storedPassword == hashedPassword, nil
-}
-
-//Database functions
-
-func initDatabase(database string) *sql.DB {
-	db, err := sql.Open("sqlite3", database)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	sqlStmt := `
-				CREATE TABLE IF NOT EXISTS USER (
-					id INTEGER PRIMARY KEY,
-					pseudo TEXT NOT NULL,
-					email TEXT NOT NULL,
-					password TEXT NOT NULL
-				);
-				`
-	_, err = db.Exec(sqlStmt)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return db
-}
-
-func displayUserTable(rows *sql.Rows) {
-	for rows.Next() {
-		var users User
-		err := rows.Scan(&users.id, &users.pseudo, &users.email, &users.password)
-		if err != nil {
-			log.Fatal(err)
-		}
-		fmt.Println(users)
-	}
-}
-
-func selectAllFromTable(db *sql.DB, table string) *sql.Rows {
-	query := "SELECT * FROM " + table
-	result, _ := db.Query(query)
-	return result
-}
-
-func selectValueFromTable(db *sql.DB, table string, value string) *sql.Rows {
-	query := "SELECT " + value + " FROM " + table
-	result, _ := db.Query(query)
-	return result
-}
-
-//structures
-
-type User struct {
-	id       int
-	pseudo   string
-	email    string
-	password string
 }
