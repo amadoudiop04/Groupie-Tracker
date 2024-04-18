@@ -1,4 +1,4 @@
-let audio = new Audio("../medias/piano.mp3");
+let audio = new Audio("/static/medias/piano.mp3");
 
 document.addEventListener("DOMContentLoaded", function () {
     var sidebar = document.querySelector('.sidebar');
@@ -20,7 +20,6 @@ let dropdownbtn = document.getElementById("dropdown-btn")
 let darkModeEnabled = false;
 darkMode.addEventListener('click', function () {
     darkModeEnabled = !darkModeEnabled;
-    console.log("click");
     if (darkModeEnabled) {
         document.body.style.backgroundColor = "black";
         topBar.style.backgroundColor = "white";
@@ -52,11 +51,9 @@ disk.addEventListener('mousemove', function () {
 
 })
 
-
-
 let myArtiste = document.getElementById("artiste-example");
 
-fetch('../json/data.json')
+fetch('/static/json/data.json')
     .then((response) => response.json()) 
     .then(artists => {
         artists.forEach(artist => {
