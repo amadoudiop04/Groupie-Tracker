@@ -11,7 +11,6 @@ import (
 	"unicode"
 )
 
-
 var (
 	timerDone = make(chan struct{})
 )
@@ -68,7 +67,10 @@ func Index(w http.ResponseWriter, r *http.Request) {
 		if action == "next" {
 			fmt.Println(" Next")
 			api.CurrentSong.ThePlaylist = api.MyPlaylist
-			api.NextTrack(api.CurrentSong.ThePlaylist)
+			_, err := api.NextTrack(api.CurrentSong.ThePlaylist)
+			if err != nil {
+				return
+			}
 			// Code pour next
 		}
 		if action == "previous" {

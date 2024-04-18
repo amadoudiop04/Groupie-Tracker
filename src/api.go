@@ -4,6 +4,8 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/binary"
+	"errors"
+
 	// "errors"
 	"fmt"
 	"github.com/zmb3/spotify"
@@ -22,7 +24,7 @@ var data = dataImage{
 var GameIndex int
 var MyPlaylist *spotify.FullPlaylist
 var track *spotify.FullTrack
-
+var TheLyrics string
 
 func Api() *spotify.FullTrack {
 	authConfig := &clientcredentials.Config{
@@ -48,13 +50,13 @@ func Api() *spotify.FullTrack {
 	log.Println("playlist id:", playlist.ID)
 	log.Println("playlist name:", playlist.Name)
 	log.Println("playlist description:", playlist.Description)
+
 	//log.Println(" le fameu playlist", playlist)
 	//log.Println(" le fameu playlist", MyPlaylist)
 
-	
 	for {
-		max := len(playlist.Tracks.Tracks)
-		randomIndex := GetRandomIndex(max)
+		Max := len(playlist.Tracks.Tracks)
+		randomIndex := GetRandomIndex(Max)
 
 		GameIndex = randomIndex
 
@@ -62,7 +64,9 @@ func Api() *spotify.FullTrack {
 
 		artist := GetArtistsNames(track.Artists)
 		title := track.Name
+
 		lyrics, err := GetLyrics(artist, title)
+		TheLyrics = lyrics
 
 		if err != nil || lyrics == "" {
 			log.Printf("No lyrics found for %s by %s, skipping...", title, artist)
@@ -72,7 +76,7 @@ func Api() *spotify.FullTrack {
 		log.Println("Artists(s)", GetArtistsNames(track.Artists))
 
 		artistID := track.Artists[0].ID
-		artistDetails, err := client.GetArtist(spotify.ID(artistID))
+		artistDetails, err := client.GetArtist(artistID)
 		if err != nil {
 			log.Printf("Error retrieving artist details: %v", err)
 		} else {
@@ -113,13 +117,32 @@ func GetArtistsNames(artists []spotify.SimpleArtist) string {
 	return fmt.Sprintf("%v", names)
 }
 
-func NextTrack(playlist *spotify.FullPlaylist) *spotify.FullTrack {
+
+func NextTrack(playlist *spotify.FullPlaylist) (*spotify.FullTrack, error) {
+	fmt.Println(GameIndex)
+	if playlist == nil || len(playlist.Tracks.Tracks) == 0 {
+		return nil, errors.New("empty or nil playlist")
+	}
+
+	if TheLyrics != "" {
+		GameIndex = (GameIndex + 1) % len(playlist.Tracks.Tracks)
+		if GameIndex < 0 {
+			GameIndex = 0
+		}
+		fmt.Println(GameIndex)
+		fmt.Println(playlist.Tracks.Tracks)
+		return &playlist.Tracks.Tracks[GameIndex].Track, nil
+	}
 	GameIndex = (GameIndex + 1) % len(playlist.Tracks.Tracks)
 	if GameIndex < 0 {
 		GameIndex = 0
 	}
-	return &playlist.Tracks.Tracks[GameIndex].Track
+	fmt.Println(GameIndex)
+	fmt.Println(playlist.Tracks.Tracks)
+	return &playlist.Tracks.Tracks[GameIndex].Track, nil
 }
+
+
 
 // func PreviousTrack(playlist *spotify.FullPlaylist) (*spotify.FullTrack, error) {
 // 	GameIndex = (GameIndex - 1 + len(playlist.Tracks.Tracks)) % len(playlist.Tracks.Tracks)
