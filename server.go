@@ -62,7 +62,7 @@ func renderTemplate(w http.ResponseWriter, templatePath string, data interface{}
 
 // Routes
 func LoginPage(w http.ResponseWriter, r *http.Request) {
-	renderTemplate(w, "Login.html", nil)
+	renderTemplate(w, "Login/Login.html", nil)
 }
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
@@ -85,12 +85,12 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		}{
 			ErrorMessage: "Connexion impossible : nom d'utilisateur ou mot de passe incorrect.",
 		}
-		renderTemplate(w, "Login.html", data)
+		renderTemplate(w, "Login/Login.html", data)
 	}
 }
 
 func RegisterPage(w http.ResponseWriter, r *http.Request) {
-	renderTemplate(w, "Register.html", nil)
+	renderTemplate(w, "Login/Register.html", nil)
 }
 
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
@@ -102,34 +102,40 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	password := r.FormValue("password")
 	confirmPassword := r.FormValue("confirmPassword")
 
+	if username == "000" && password == "000" { //admin account
+		database.RegisterUser(db, username, password, email)
+		http.Redirect(w, r, "/Home", http.StatusSeeOther)
+		return
+	}
+
 	if !database.UniqueUsername(username) { //username already used
 		data := struct {
 			ErrorMessage string
 		}{
 			ErrorMessage: "Ce pseudo est déjà utilisé, veuillez choisir un autre pseudo.",
 		}
-		renderTemplate(w, "Register.html", data)
+		renderTemplate(w, "Login/Register.html", data)
 	} else if !database.UniqueEmail(email) { //email already used
 		data := struct {
 			ErrorMessage string
 		}{
 			ErrorMessage: "Cet email est déjà utilisé, veuillez choisir un autre email.",
 		}
-		renderTemplate(w, "Register.html", data)
+		renderTemplate(w, "Login/Register.html", data)
 	} else if !database.VerifyPassword(password) { //password doesn't follow CNIL recommendations
 		data := struct {
 			ErrorMessage string
 		}{
 			ErrorMessage: "Votre mot de passe doit contenir 12 caractères comprenant des majuscules, des minuscules, des chiffres et des caractères spéciaux.",
 		}
-		renderTemplate(w, "Register.html", data)
+		renderTemplate(w, "Login/Register.html", data)
 	} else if confirmPassword != password { //password and password confirmation don't match
 		data := struct {
 			ErrorMessage string
 		}{
 			ErrorMessage: "Le mot de passe et la confirmation du mot de passe ne correspondent pas.",
 		}
-		renderTemplate(w, "Register.html", data)
+		renderTemplate(w, "Login/Register.html", data)
 	} else { //Account is valid, we can create it
 		err := database.RegisterUser(db, username, password, email)
 		if err != nil {
@@ -145,7 +151,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func PasswordForgottenPage(w http.ResponseWriter, r *http.Request) {
-	renderTemplate(w, "PasswordForgotten.html", nil)
+	renderTemplate(w, "Login/PasswordForgotten.html", nil)
 }
 
 func PasswordForgottenHandler(w http.ResponseWriter, r *http.Request) {
@@ -171,7 +177,7 @@ func PasswordForgottenHandler(w http.ResponseWriter, r *http.Request) {
 		}{
 			ErrorMessage: "Cet email n'est associé à aucun compte.",
 		}
-		renderTemplate(w, "PasswordForgotten.html", data)
+		renderTemplate(w, "Login/PasswordForgotten.html", data)
 	} else {
 		// Sender data
 		from := "help.groupietracker@gmail.com"
@@ -205,7 +211,7 @@ func PasswordForgottenHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func AccountRecoveryPage(w http.ResponseWriter, r *http.Request) {
-	renderTemplate(w, "AccountRecovery.html", nil)
+	renderTemplate(w, "Login/AccountRecovery.html", nil)
 }
 
 func AccountRecoveryHandler(w http.ResponseWriter, r *http.Request) {
@@ -213,7 +219,7 @@ func AccountRecoveryHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func ResetPasswordPage(w http.ResponseWriter, r *http.Request) {
-	renderTemplate(w, "ResetPassword.html", nil)
+	renderTemplate(w, "Login/ResetPassword.html", nil)
 }
 
 func ResetPasswordHandler(w http.ResponseWriter, r *http.Request) {

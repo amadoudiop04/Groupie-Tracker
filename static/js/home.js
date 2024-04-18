@@ -1,5 +1,3 @@
-let audio = new Audio("/static/medias/piano.mp3");
-
 document.addEventListener("DOMContentLoaded", function () {
     var sidebar = document.querySelector('.sidebar');
     var dropdownBtn = document.querySelector('.dropdown-btn');
@@ -38,18 +36,27 @@ darkMode.addEventListener('click', function () {
 
 
 let disk = document.getElementById("disk");
-let diskAudio = false;
-disk.addEventListener('mousemove', function () {
-    diskAudio = !diskAudio;
-    if (diskAudio) {
-        diskAudio = true;
-        audio.play();
-    } else {
-        diskAudio = false;
-        audio.pause();
-    }
+let audio1 = new Audio("/static/medias/PianoPart1.mp3");
+let audio2 = new Audio("/static/medias/PianoPart2.mp3");
 
-})
+disk.addEventListener('mouseenter', function () {
+    audio1.play();
+});
+
+disk.addEventListener('mouseleave', function () {
+    audio1.pause();
+    audio1.currentTime = 0;
+    audio2.pause();
+    audio2.currentTime = 0;
+});
+
+audio1.addEventListener('ended', function() {
+    audio2.play();
+});
+
+audio2.addEventListener('ended', function() {
+    audio2.play();
+});
 
 let myArtiste = document.getElementById("artiste-example");
 
