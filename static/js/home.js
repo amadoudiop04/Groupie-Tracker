@@ -1,4 +1,4 @@
-let audio = new Audio("./medias/piano.mp3");
+let audio = new Audio("../medias/piano.mp3");
 
 document.addEventListener("DOMContentLoaded", function () {
     var sidebar = document.querySelector('.sidebar');
@@ -56,7 +56,7 @@ disk.addEventListener('mousemove', function () {
 
 let myArtiste = document.getElementById("artiste-example");
 
-fetch('./data.json')
+fetch('../json/data.json')
     .then((response) => response.json()) 
     .then(artists => {
         artists.forEach(artist => {
