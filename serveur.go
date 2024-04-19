@@ -66,18 +66,30 @@ func main() {
 			fmt.Println(input)
 		}
 
-		tpl := template.Must(template.ParseFiles("index.html"))
+		for {
+			track := api()[currentTrackIndex]
 
-		track := api()[currentTrackIndex]
-		data := PageData{Track: track}
+			if track.PreviewURL != "" {
+				break
+			}
+			currentTrackIndex++
+			if currentTrackIndex >= len(api()) {
+				currentTrackIndex = 0
+			}
+		}
+
+		tpl := template.Must(template.ParseFiles("index.html"))
+		data := PageData{Track: api()[currentTrackIndex]}
 
 		if err := tpl.Execute(w, data); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 	})
+
 	fs := http.FileServer(http.Dir("./static/"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
+
 	log.Println("Server started on :8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
