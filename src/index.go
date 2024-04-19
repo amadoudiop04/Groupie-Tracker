@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/zmb3/spotify"
 )
@@ -58,7 +59,8 @@ func GetLyrics(artist, title string) (string, error) {
 		return "", err
 	}
 
-	return lyricsResponse.Lyrics, nil
+	lines := strings.Split(lyricsResponse.Lyrics, "\n")
+	return strings.Join(lines[:20], "\n"), nil
 }
 
 func LoadData() {

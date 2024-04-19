@@ -5,7 +5,6 @@ import (
 	"crypto/rand"
 	"encoding/binary"
 	"errors"
-
 	// "errors"
 	"fmt"
 	"github.com/zmb3/spotify"
@@ -117,7 +116,6 @@ func GetArtistsNames(artists []spotify.SimpleArtist) string {
 	return fmt.Sprintf("%v", names)
 }
 
-
 func NextTrack(playlist *spotify.FullPlaylist) (*spotify.FullTrack, error) {
 	fmt.Println(GameIndex)
 	if playlist == nil || len(playlist.Tracks.Tracks) == 0 {
@@ -138,11 +136,9 @@ func NextTrack(playlist *spotify.FullPlaylist) (*spotify.FullTrack, error) {
 		GameIndex = 0
 	}
 	fmt.Println(GameIndex)
-	fmt.Println(playlist.Tracks.Tracks)
+	// fmt.Println(playlist.Tracks.Tracks)
 	return &playlist.Tracks.Tracks[GameIndex].Track, nil
 }
-
-
 
 // func PreviousTrack(playlist *spotify.FullPlaylist) (*spotify.FullTrack, error) {
 // 	GameIndex = (GameIndex - 1 + len(playlist.Tracks.Tracks)) % len(playlist.Tracks.Tracks)
