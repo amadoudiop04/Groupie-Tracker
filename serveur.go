@@ -10,6 +10,16 @@ import (
 	"net/http"
 )
 
+type gameData struct {
+	Name       string
+	ScoreBoard int
+}
+
+var Infos = gameData{
+	Name:       "",
+	ScoreBoard: 0,
+}
+
 type PageData struct {
 	Track *spotify.SimpleTrack
 }
@@ -30,7 +40,7 @@ func api() []*spotify.SimpleTrack {
 
 	client := spotify.Authenticator{}.NewClient(accessToken)
 
-	playlistID := spotify.ID("37i9dQZF1DX9PXZbuB8BjJ")
+	playlistID := spotify.ID("6Xf0gjt1YmwvEG5iS8QOfg?si=2de553d01ff84abb")
 	playlist, err := client.GetPlaylist(playlistID)
 	if err != nil {
 		log.Fatalf("error retrieving playlist data: %v", err)
@@ -58,6 +68,7 @@ func main() {
 			currentTrack := api()[currentTrackIndex]
 
 			if input == currentTrack.Name {
+			
 				currentTrackIndex++
 				if currentTrackIndex >= len(api()) {
 					currentTrackIndex = 0
@@ -79,7 +90,9 @@ func main() {
 		}
 
 		tpl := template.Must(template.ParseFiles("index.html"))
-		data := PageData{Track: api()[currentTrackIndex]}
+		data := PageData{
+			Track: api()[currentTrackIndex],
+		}
 
 		if err := tpl.Execute(w, data); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
