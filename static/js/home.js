@@ -6,17 +6,17 @@ document.addEventListener("DOMContentLoaded", function () {
     dropdownBtn.addEventListener('click', function () {
         dropdownContainer.classList.toggle('show');
         dropdownBtn.classList.toggle('active');
-        sidebar.classList.toggle('expanded'); // Ajoute ou supprime la classe 'expanded' pour changer la largeur du menu
+        sidebar.classList.toggle('expanded');
     });
 });
 
-let darkMode = document.getElementById('croissant');
+let lightMode = document.getElementById('light mode');
 let topBar = document.getElementById("top-bar");
 let sidebar = document.getElementById("sidebar expanded");
 let dropdownbtn = document.getElementById("dropdown-btn")
 
 let darkModeEnabled = false;
-darkMode.addEventListener('click', function () {
+lightMode.addEventListener('click', function () {
     darkModeEnabled = !darkModeEnabled;
     if (darkModeEnabled) {
         document.body.style.backgroundColor = "black";
@@ -64,7 +64,7 @@ fetch('/static/json/data.json')
     .then((response) => response.json()) 
     .then(artists => {
         artists.forEach(artist => {
-            let div = document.createElement("div");
+            let div = document.createElement("div"); 
             let img = document.createElement("img");
 
             img.src = artist.images.lg;

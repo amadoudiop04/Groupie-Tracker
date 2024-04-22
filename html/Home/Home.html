@@ -13,12 +13,12 @@
 <body>
     <div class="top-bar" id="top-bar">
         <div class="btn-containers">
-            <button class="buttons" >Blind test</button>
-            <button class="buttons" >Deaf test</button>
-            <button class="buttons" >Petit bac</button>
-        </div>
-        
+            <a href="/Blindtest"><button class="buttons"> Blind test </button></a>
+            <a href="/GuessTheSong"><button class="buttons"> Guess the song </button></a>
+            <a href="/Petitbac"><button class="buttons"> Petit bac </button></a>
+        </div>  
     </div>
+    
     <h1 id="h1"> bienvenue dans Groupie-Tracker</h1>
     <div class="container">
         <img class="my-disk" id="disk" src="/static/img/Disque.png" height="150px" width="150px" alt="Image">
@@ -26,10 +26,9 @@
 
     <div class="sidebar expanded" id="sidebar expanded">
         <button class="dropdown-btn" id="dropdown-btn">Menu</button>
-        <div class="dropdown-container">
-        </div>
-        <img class="icone" src="/static/img/homme.png" alt="Image" height="30px" width="30px">
-        <img class="icone-2"  id="croissant" src="/static/img/Croissant.png" alt="Image" height="30px" width="30px">
+        <div class="dropdown-container"></div>
+        <a href="/MyAccount"><img class="icone" src="/static/img/homme.png" alt="Image" height="30px" width="30px"></a>
+        <img class="icone-2"  id="light mode" src="/static/img/Croissant.png" alt="Image" height="30px" width="30px">
     </div>
 
     <div id="artiste-example"></div>
