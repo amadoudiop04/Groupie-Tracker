@@ -147,26 +147,28 @@ func NextTrack() {
 	title := nextTrack.Name
 
 	lyrics, err := GetLyrics(artist, title)
-	if err != nil {
-		log.Fatalf("error retrieving lyrics: %v", err)
+	if err != nil || lyrics == "" {
+		log.Printf("Failed to retrieve lyrics for %s by %s, skipping...", title, artist)
+		NextTrack()
+		return
 	}
 
 	CurrentSong.Singer = artist
 	CurrentSong.TitleSong = title
 	CurrentSong.LyricsSong = lyrics
+	//
+	//artistID := nextTrack.Artists[0].ID
+	//artistDetails, err := client.GetArtist(artistID)
+	//if err != nil {
+	//	log.Printf("Error retrieving artist details: %v", err)
+	//} else {
+	//	log.Println("Artist Image URL:", artistDetails.Images[0].URL)
+	//}
+	//
+	//artistImageURL := ""
+	//if len(artistDetails.Images) > 0 {
+	//	artistImageURL = artistDetails.Images[0].URL
+	//}
+	//
 	//CurrentSong.ImageURL = artistImageURL
 }
-
-// func PreviousTrack(playlist *spotify.FullPlaylist) (*spotify.FullTrack, error) {
-// 	GameIndex = (GameIndex - 1 + len(playlist.Tracks.Tracks)) % len(playlist.Tracks.Tracks)
-// 	return &playlist.Tracks.Tracks[GameIndex].Track, nil
-// }
-
-// func RestartPlaylist(playlist *spotify.FullPlaylist) error {
-// 	newIndex := GetRandomIndex(len(playlist.Tracks.Tracks))
-// 	if newIndex < 0 || newIndex >= len(playlist.Tracks.Tracks) {
-// 		return errors.New("invalid index")
-// 	}
-// 	GameIndex = newIndex
-// 	return nil
-// }

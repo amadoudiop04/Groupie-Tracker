@@ -18,7 +18,7 @@ var (
 func ResetData() {
 	api.CurrentSong.Scores = 0
 	api.CurrentSong.RemainingAttempts = 5
-	api.CurrentSong.Timer = 60
+	api.CurrentSong.Timer = 30
 }
 
 func StartTimer() {
@@ -93,6 +93,10 @@ func Index(w http.ResponseWriter, r *http.Request) {
 
 	if api.CurrentSong.Scores == 50 {
 		http.Redirect(w, r, "/win", http.StatusSeeOther)
+	}
+
+	if api.CurrentSong.Timer == 0 {
+		api.NextTrack()
 	}
 
 	err := html.Execute(w, api.CurrentSong)
