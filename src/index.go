@@ -16,6 +16,7 @@ type Song struct {
 	TitleSong         string
 	LyricsSong        string
 	ImageURL          string
+	CheatMess         string
 	Scores            int
 	RemainingAttempts int
 	Timer             int
@@ -35,6 +36,7 @@ var CurrentSong = Song{
 	RemainingAttempts: 5,
 	Timer:             30,
 	ThePlaylist:       nil,
+	CheatMess:         "",
 }
 
 func GetLyrics(artist, title string) (string, error) {

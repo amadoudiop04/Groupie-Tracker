@@ -66,7 +66,7 @@ func Api() *spotify.FullTrack {
 
 		lyrics, err := GetLyrics(artist, title)
 		TheLyrics = lyrics
-
+		log.Println("le lyrics", lyrics)
 		if err != nil || lyrics == "" {
 			log.Printf("No lyrics found for %s by %s, skipping...", title, artist)
 			continue
@@ -116,28 +116,45 @@ func GetArtistsNames(artists []spotify.SimpleArtist) string {
 	return fmt.Sprintf("%v", names)
 }
 
-func NextTrack(playlist *spotify.FullPlaylist) (*spotify.FullTrack, error) {
+func GetTrackInfo(playlist *spotify.FullPlaylist) (*spotify.FullTrack, error) {
 	fmt.Println(GameIndex)
 	if playlist == nil || len(playlist.Tracks.Tracks) == 0 {
 		return nil, errors.New("empty or nil playlist")
 	}
 
+	GameIndex = (GameIndex + 1) % len(playlist.Tracks.Tracks)
 	if TheLyrics != "" {
-		GameIndex = (GameIndex + 1) % len(playlist.Tracks.Tracks)
 		if GameIndex < 0 {
 			GameIndex = 0
+		} else {
+			GameIndex = (GameIndex + 1) % len(playlist.Tracks.Tracks)
 		}
-		fmt.Println(GameIndex)
-		fmt.Println(playlist.Tracks.Tracks)
 		return &playlist.Tracks.Tracks[GameIndex].Track, nil
-	}
-	GameIndex = (GameIndex + 1) % len(playlist.Tracks.Tracks)
-	if GameIndex < 0 {
-		GameIndex = 0
 	}
 	fmt.Println(GameIndex)
 	// fmt.Println(playlist.Tracks.Tracks)
 	return &playlist.Tracks.Tracks[GameIndex].Track, nil
+}
+
+func NextTrack() {
+	CurrentSong.ThePlaylist = MyPlaylist
+	nextTrack, err := GetTrackInfo(CurrentSong.ThePlaylist)
+	if err != nil {
+		return
+	}
+
+	artist := GetArtistsNames(nextTrack.Artists)
+	title := nextTrack.Name
+
+	lyrics, err := GetLyrics(artist, title)
+	if err != nil {
+		log.Fatalf("error retrieving lyrics: %v", err)
+	}
+
+	CurrentSong.Singer = artist
+	CurrentSong.TitleSong = title
+	CurrentSong.LyricsSong = lyrics
+	//CurrentSong.ImageURL = artistImageURL
 }
 
 // func PreviousTrack(playlist *spotify.FullPlaylist) (*spotify.FullTrack, error) {

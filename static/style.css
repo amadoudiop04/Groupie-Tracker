@@ -28,6 +28,7 @@
       border-radius: 20px;
       background: linear-gradient(to bottom right,#50ffd3,#6A5ACD);
       box-shadow: rgba(0, 0, 0, 0.3) 0px 19px 38px, rgba(0, 0, 0, 0.22) 0px 15px 12px;
+        transform: translateY(-6%);
     }
 
     .details {
@@ -35,7 +36,7 @@
       align-items: center;
       flex-direction: column;
       justify-content: center;
-      margin: -6px;
+      margin: -10px;
     }
 
     .track-art {
@@ -237,4 +238,9 @@
       100% {
         height: 100%;
       }
+    }
+
+
+    .cheatMess{
+        color: red;
     }

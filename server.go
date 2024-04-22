@@ -60,26 +60,23 @@ func CompareStrings(input1, input2 string) bool {
 
 func Index(w http.ResponseWriter, r *http.Request) {
 	html := template.Must(template.ParseFiles("templates/index.html"))
-
 	if r.Method == "POST" {
 
 		action := r.FormValue("action")
 		if action == "next" {
 			fmt.Println(" Next")
-			api.CurrentSong.ThePlaylist = api.MyPlaylist
-			_, err := api.NextTrack(api.CurrentSong.ThePlaylist)
-			if err != nil {
-				return
-			}
+			api.NextTrack()
 			// Code pour next
 		}
 		if action == "previous" {
 			fmt.Println(" previous")
+			api.CurrentSong.CheatMess = "Please don't cheat ❌"
 			// Code pour previous
 		}
 		if action == "playPause" {
 			fmt.Println("play")
-			// Code pour next
+			api.CurrentSong.CheatMess = "Please don't cheat❌"
+			// Code pour Play
 		}
 
 		input := r.FormValue("value")
