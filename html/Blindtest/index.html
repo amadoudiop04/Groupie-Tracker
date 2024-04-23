@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400..700&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/blindtest.css">
+    <title>Blind Test</title>
+</head>
+
+<body>
+    <h1 class="title-top">Blind Test</h1>
+        <div class="scoreboard">
+            <h2>00/Points</h2>
+            <h2>.../Users</h2>
+        </div>
+   
+    <div class="container-block">
+        <div class="audioContainer">
+            <div class="deco-Img">    
+        </div>
+
+        <div class="myAudio">
+            <audio controls> <source src="{{ .Track.PreviewURL }}" type="audio/mpeg"> </audio>
+        </div>
+
+         <div class="container">
+            <div class="wave"></div>
+            <div class="wave"></div>
+            <div class="wave"></div>
+            <div class="wave"></div>
+            <div class="wave"></div>
+         </div>
+      
+        <form action="/" method="post">
+            <div class="inputContainer">
+                <input class="myInput" type="text" name="value" placeholder="Your response">
+            </div> 
+            <button  class="mybtn" type="submit">Send</button>
+         </form>
+    </div>
+        
+</body>
+
+</html>

@@ -9,9 +9,11 @@ import (
 	"net/smtp"
 	"strings"
 
-	"./database"
+	"groupieTracker/database"
+	"groupieTracker/games"
 
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/zmb3/spotify"
 )
 
 func main() {
@@ -34,6 +36,7 @@ func main() {
 	http.HandleFunc("/ResetPassword", ResetPasswordPage)
 	http.HandleFunc("/ResetPasswordHandler", ResetPasswordHandler)
 	http.HandleFunc("/Home", HomePage)
+	http.HandleFunc("/BlindtestLandingPage", BlindtestLandingPage)
 	http.HandleFunc("/Blindtest", Blindtest)
 	http.HandleFunc("/Deaftest", Deaftest)
 	http.HandleFunc("/Petitbac", Petitbac)
@@ -259,8 +262,41 @@ func HomePage(w http.ResponseWriter, r *http.Request) {
 	renderTemplate(w, "Home.html", nil)
 }
 
+func BlindtestLandingPage(w http.ResponseWriter, r *http.Request) {
+	renderTemplate(w, "Blindtest/LandingPage.html", nil)
+}
+
 func Blindtest(w http.ResponseWriter, r *http.Request) {
-	renderTemplate(w, "Blindtest.html", nil)
+	tracks := games.Api("6Xf0gjt1YmwvEG5iS8QOfg?si=2de553d01ff84abb")
+	if r.Method == "POST" {
+		input := r.FormValue("value")
+		currentTrack := tracks[currentTrackIndex]
+
+		if input == currentTrack.Name {
+			currentTrackIndex++
+			if currentTrackIndex >= len(tracks) {
+				currentTrackIndex = 0
+			}
+		}
+		fmt.Println(input)
+	}
+
+	for {
+		track := tracks[currentTrackIndex]
+
+		if track.PreviewURL != "" {
+			break
+		}
+		currentTrackIndex++
+		if currentTrackIndex >= len(tracks) {
+			currentTrackIndex = 0
+		}
+	}
+
+	data := PageData{
+		Track: tracks[currentTrackIndex],
+	}
+	renderTemplate(w, "Blindtest/index.html", data)
 }
 
 func Deaftest(w http.ResponseWriter, r *http.Request) {
@@ -270,3 +306,19 @@ func Deaftest(w http.ResponseWriter, r *http.Request) {
 func Petitbac(w http.ResponseWriter, r *http.Request) {
 	renderTemplate(w, "Petitbac.html", nil)
 }
+
+type gameData struct {
+	Name       string
+	ScoreBoard int
+}
+
+var Infos = gameData{
+	Name:       "",
+	ScoreBoard: 0,
+}
+
+type PageData struct {
+	Track *spotify.SimpleTrack
+}
+
+var currentTrackIndex int
