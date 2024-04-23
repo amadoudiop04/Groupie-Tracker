@@ -36,6 +36,7 @@ func main() {
 	http.HandleFunc("/ResetPassword", ResetPasswordPage)
 	http.HandleFunc("/ResetPasswordHandler", ResetPasswordHandler)
 	http.HandleFunc("/Home", HomePage)
+	http.HandleFunc("/UserProfile", UserProfile)
 	http.HandleFunc("/BlindtestLandingPage", BlindtestLandingPage)
 	http.HandleFunc("/Blindtest", Blindtest)
 	http.HandleFunc("/Deaftest", Deaftest)
@@ -260,6 +261,10 @@ func ResetPasswordHandler(w http.ResponseWriter, r *http.Request) {
 
 func HomePage(w http.ResponseWriter, r *http.Request) {
 	renderTemplate(w, "Home.html", nil)
+}
+
+func UserProfile(w http.ResponseWriter, r *http.Request) {
+	renderTemplate(w, "UserProfile.html", nil)
 }
 
 func BlindtestLandingPage(w http.ResponseWriter, r *http.Request) {
