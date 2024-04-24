@@ -26,9 +26,9 @@
     .wrapper {
       border: 1px solid transparent;
       border-radius: 20px;
-      background: linear-gradient(to bottom right,#50ffd3,#6A5ACD);
+      background: linear-gradient(to bottom right, #50ffd3, #6A5ACD);
       box-shadow: rgba(0, 0, 0, 0.3) 0px 19px 38px, rgba(0, 0, 0, 0.22) 0px 15px 12px;
-        transform: translateY(-6%);
+      transform: translateY(-6%);
     }
 
     .details {
@@ -53,13 +53,14 @@
       -moz-border-radius: 190px;
       -webkit-border-radius: 190px;
       border-radius: 190px;
-    }
-     
-    .track-art {
-      overflow: hidden; 
+      background: center / cover no-repeat url("https://m.media-amazon.com/images/I/81NF853al9L.png");
     }
 
-    .track-art img{
+    .track-art {
+      overflow: hidden;
+    }
+
+    .track-art img {
       width: 100%;
       height: 100%;
       object-fit: cover;
@@ -132,7 +133,7 @@
       }
     }
 
-    
+
     .inputResquest,
     .Mybtn {
       display: flex;
@@ -182,13 +183,15 @@
       white-space: pre-line;
     }
 
-.track-name,.track-artist,.now-playing{
-  /* color: white; */
-  font-family: "Cormorant", serif;
-  font-optical-sizing: auto;
-  font-weight: 400;
-  font-style: normal;
-}
+    .track-name,
+    .track-artist,
+    .now-playing {
+      /* color: white; */
+      font-family: "Cormorant", serif;
+      font-optical-sizing: auto;
+      font-weight: 400;
+      font-style: normal;
+    }
 
     .container {
       height: 50px;
@@ -241,6 +244,6 @@
     }
 
 
-    .cheatMess{
-        color: red;
+    .cheatMess {
+      color: red;
     }

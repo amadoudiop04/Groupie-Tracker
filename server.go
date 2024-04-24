@@ -31,6 +31,7 @@ func StartTimer() {
 			api.CurrentSong.Timer--
 			if api.CurrentSong.Timer <= 0 {
 				close(timerDone)
+				//api.NextTrack()
 				return
 			}
 		case <-timerDone:
@@ -93,10 +94,6 @@ func Index(w http.ResponseWriter, r *http.Request) {
 
 	if api.CurrentSong.Scores == 50 {
 		http.Redirect(w, r, "/win", http.StatusSeeOther)
-	}
-
-	if api.CurrentSong.Timer == 0 {
-		api.NextTrack()
 	}
 
 	err := html.Execute(w, api.CurrentSong)

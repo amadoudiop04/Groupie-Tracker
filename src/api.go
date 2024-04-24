@@ -156,19 +156,5 @@ func NextTrack() {
 	CurrentSong.Singer = artist
 	CurrentSong.TitleSong = title
 	CurrentSong.LyricsSong = lyrics
-	//
-	//artistID := nextTrack.Artists[0].ID
-	//artistDetails, err := client.GetArtist(artistID)
-	//if err != nil {
-	//	log.Printf("Error retrieving artist details: %v", err)
-	//} else {
-	//	log.Println("Artist Image URL:", artistDetails.Images[0].URL)
-	//}
-	//
-	//artistImageURL := ""
-	//if len(artistDetails.Images) > 0 {
-	//	artistImageURL = artistDetails.Images[0].URL
-	//}
-	//
-	//CurrentSong.ImageURL = artistImageURL
+	CurrentSong.Timer = 30
 }
