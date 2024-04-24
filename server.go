@@ -13,7 +13,6 @@ import (
 	"groupieTracker/games"
 
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/zmb3/spotify"
 )
 
 func main() {
@@ -39,6 +38,7 @@ func main() {
 	http.HandleFunc("/UserProfile", UserProfile)
 	http.HandleFunc("/BlindtestLandingPage", BlindtestLandingPage)
 	http.HandleFunc("/Blindtest", Blindtest)
+	http.HandleFunc("/EndBlindtest", EndBlindtest)
 	http.HandleFunc("/Deaftest", Deaftest)
 	http.HandleFunc("/Petitbac", Petitbac)
 
@@ -59,7 +59,6 @@ func renderTemplate(w http.ResponseWriter, templatePath string, data interface{}
 	err = tmpl.Execute(w, data)
 	if err != nil {
 		log.Print(err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 }
@@ -273,35 +272,26 @@ func BlindtestLandingPage(w http.ResponseWriter, r *http.Request) {
 
 func Blindtest(w http.ResponseWriter, r *http.Request) {
 	tracks := games.Api("6Xf0gjt1YmwvEG5iS8QOfg?si=2de553d01ff84abb")
-	if r.Method == "POST" {
-		input := r.FormValue("value")
-		currentTrack := tracks[currentTrackIndex]
+	tracks = games.RemovePlayedTracks(tracks)
+	currentTrack := games.NextTrack(tracks)
 
-		if input == currentTrack.Name {
-			currentTrackIndex++
-			if currentTrackIndex >= len(tracks) {
-				currentTrackIndex = 0
-			}
-		}
-		fmt.Println(input)
+	if currentTrack == nil {
+		http.Redirect(w, r, "/EndBlindtest", http.StatusSeeOther)
 	}
 
-	for {
-		track := tracks[currentTrackIndex]
+	games.PlayedTracks = append(games.PlayedTracks, currentTrack)
 
-		if track.PreviewURL != "" {
-			break
-		}
-		currentTrackIndex++
-		if currentTrackIndex >= len(tracks) {
-			currentTrackIndex = 0
-		}
+	data := games.PageData{
+		Track: currentTrack,
 	}
 
-	data := PageData{
-		Track: tracks[currentTrackIndex],
-	}
+	w.Header().Set("Refresh", "16")
 	renderTemplate(w, "Blindtest/index.html", data)
+
+}
+
+func EndBlindtest(w http.ResponseWriter, r *http.Request) {
+	renderTemplate(w, "Blindtest/EndGame.html", nil)
 }
 
 func Deaftest(w http.ResponseWriter, r *http.Request) {
@@ -311,19 +301,3 @@ func Deaftest(w http.ResponseWriter, r *http.Request) {
 func Petitbac(w http.ResponseWriter, r *http.Request) {
 	renderTemplate(w, "Petitbac.html", nil)
 }
-
-type gameData struct {
-	Name       string
-	ScoreBoard int
-}
-
-var Infos = gameData{
-	Name:       "",
-	ScoreBoard: 0,
-}
-
-type PageData struct {
-	Track *spotify.SimpleTrack
-}
-
-var currentTrackIndex int

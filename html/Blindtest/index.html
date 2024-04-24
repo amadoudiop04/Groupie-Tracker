@@ -14,8 +14,8 @@
 <body>
     <h1 class="title-top">Blind Test</h1>
         <div class="scoreboard">
-            <h2>00/Points</h2>
-            <h2>.../Users</h2>
+            <h2>00 / Points</h2>
+            <h2>... / Users</h2>
         </div>
    
     <div class="container-block">
@@ -23,8 +23,10 @@
             <div class="deco-Img">    
         </div>
 
+        <p id="timeRemaining">Il reste 10 secondes de musique </p>
+
         <div class="myAudio">
-            <audio controls> <source src="{{ .Track.PreviewURL }}" type="audio/mpeg"> </audio>
+            <audio id="track" autoplay> <source src="{{ .Track.PreviewURL }}" type="audio/mpeg"> </audio>
         </div>
 
          <div class="container">
@@ -40,9 +42,10 @@
                 <input class="myInput" type="text" name="value" placeholder="Your response">
             </div> 
             <button  class="mybtn" type="submit">Send</button>
-         </form>
+        </form>
     </div>
-        
+
+    <script src="/static/js/timer.js"></script>
 </body>
 
 </html>

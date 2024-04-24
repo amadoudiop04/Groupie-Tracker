@@ -3,6 +3,7 @@ package games
 import (
 	"context"
 	"log"
+	"math/rand"
 
 	"github.com/zmb3/spotify"
 	"golang.org/x/oauth2/clientcredentials"
@@ -40,5 +41,63 @@ func Api(ID string) []*spotify.SimpleTrack {
 		}
 		tracks = append(tracks, simpleTrack)
 	}
+
 	return tracks
 }
+
+func NextTrack(tracks []*spotify.SimpleTrack) *spotify.SimpleTrack {
+
+	if len(tracks) == 0 {
+		return nil
+	}
+
+	var nextTrack *spotify.SimpleTrack
+
+	for {
+		index := rand.Intn(len(tracks))
+		nextTrack = tracks[index]
+
+		if nextTrack.PreviewURL != "" {
+			break
+		}
+	}
+
+	return nextTrack
+}
+
+func RemovePlayedTracks(tracks []*spotify.SimpleTrack) []*spotify.SimpleTrack {
+	updatedTracks := []*spotify.SimpleTrack{}
+
+	for _, track := range tracks {
+		if !IsTrackPlayed(track) {
+			updatedTracks = append(updatedTracks, track)
+		}
+	}
+
+	return updatedTracks
+}
+
+func IsTrackPlayed(track *spotify.SimpleTrack) bool {
+	for _, playedTrack := range PlayedTracks {
+		if track.ID == playedTrack.ID {
+			return true
+		}
+	}
+	return false
+}
+
+type gameData struct {
+	Name       string
+	ScoreBoard int
+}
+
+var Infos = gameData{
+	Name:       "",
+	ScoreBoard: 0,
+}
+
+type PageData struct {
+	Track *spotify.SimpleTrack
+}
+
+var PlayedTracks []*spotify.SimpleTrack
