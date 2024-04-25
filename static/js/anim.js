@@ -15,6 +15,3 @@ function startConfettiAnimation() {
     }
 }
 
-setTimeout(() => {
-    document.getElementById('confetti').innerHTML = '';
-}, 1000);

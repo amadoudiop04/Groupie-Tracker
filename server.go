@@ -2,111 +2,59 @@ package main
 
 import (
 	"fmt"
-	api "guessthesong/src"
+	games "guessthesong/go"
 	"html/template"
-	"io/ioutil"
 	"net/http"
-	"strings"
-	"time"
-	"unicode"
 )
 
-var (
-	timerDone = make(chan struct{})
-)
-
-func ResetData() {
-	api.CurrentSong.Scores = 0
-	api.CurrentSong.RemainingAttempts = 5
-	api.CurrentSong.Timer = 30
-}
-
-func StartTimer() {
-	ticker := time.NewTicker(1 * time.Second)
-	defer ticker.Stop()
-
-	for {
-		select {
-		case <-ticker.C:
-			api.CurrentSong.Timer--
-			if api.CurrentSong.Timer <= 0 {
-				close(timerDone)
-				//api.NextTrack()
-				return
-			}
-		case <-timerDone:
-			return
-		}
-	}
-}
-
-func RemoveAccents(input string) string {
-	var output string
-	for _, char := range input {
-		if unicode.Is(unicode.Mn, char) {
-			continue
-		}
-		output += string(char)
-	}
-	return output
-}
-
-func CompareStrings(input1, input2 string) bool {
-
-	input1 = RemoveAccents(strings.ToLower(input1))
-	input2 = RemoveAccents(strings.ToLower(input2))
-
-	return input1 == input2
-}
-
-func Index(w http.ResponseWriter, r *http.Request) {
-	html := template.Must(template.ParseFiles("templates/index.html"))
+func GuessTheSong(w http.ResponseWriter, r *http.Request) {
+	games.LoadData()
+	html := template.Must(template.ParseFiles("html/guessthesong/index.html"))
 	if r.Method == "POST" {
 
 		action := r.FormValue("action")
 		if action == "next" {
 			fmt.Println(" Next")
-			api.NextTrack()
-			// Code pour next
+			games.NextTrack()
 		}
 		if action == "previous" {
 			fmt.Println(" previous")
-			api.CurrentSong.CheatMess = "Please don't cheat ❌"
+			games.CurrentSong.CheatMess = "Please don't cheat ❌"
 			// Code pour previous
 		}
 		if action == "playPause" {
 			fmt.Println("play")
-			api.CurrentSong.CheatMess = "Please don't cheat❌"
+			games.CurrentSong.CheatMess = "Please don't cheat❌"
 			// Code pour Play
 		}
 
 		input := r.FormValue("value")
-		if CompareStrings(input, api.CurrentSong.TitleSong) {
-			api.CurrentSong.Scores += 10
+		if games.CompareStrings(input, games.CurrentSong.TitleSong) {
+			games.CurrentSong.Scores += 10
 		} else {
-			api.CurrentSong.RemainingAttempts--
+			games.CurrentSong.RemainingAttempts--
 		}
 	}
 
-	if api.CurrentSong.RemainingAttempts == 0 {
+	if games.CurrentSong.RemainingAttempts == 0 {
 		http.Redirect(w, r, "/lose", http.StatusSeeOther)
 	}
 
-	if api.CurrentSong.Scores == 50 {
+	if games.CurrentSong.Scores == 50 {
 		http.Redirect(w, r, "/win", http.StatusSeeOther)
 	}
 
-	err := html.Execute(w, api.CurrentSong)
+	err := html.Execute(w, games.CurrentSong)
 	if err != nil {
 		return
 	}
 }
 
-func Lost(w http.ResponseWriter, r *http.Request) {
-	html := template.Must(template.ParseFiles("templates/lose.html"))
+func GuessTheSongLose(w http.ResponseWriter, r *http.Request) {
+	html := template.Must(template.ParseFiles("html/guessthesong/lose.html"))
 
 	if r.Method == "POST" {
-		ResetData()
+		games.ResetData()
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 	}
 
@@ -116,11 +64,11 @@ func Lost(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func Win(w http.ResponseWriter, r *http.Request) {
-	html := template.Must(template.ParseFiles("templates/win.html"))
+func GuessTheSongWin(w http.ResponseWriter, r *http.Request) {
+	html := template.Must(template.ParseFiles("html/guessthesong/win.html"))
 
 	if r.Method == "POST" {
-		ResetData()
+		games.ResetData()
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 	}
 
@@ -130,11 +78,11 @@ func Win(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func Info(w http.ResponseWriter, r *http.Request) {
-	html := template.Must(template.ParseFiles("templates/info.html"))
+func GuessTheSongInfo(w http.ResponseWriter, r *http.Request) {
+	html := template.Must(template.ParseFiles("html/guessthesong/info.html"))
 
 	if r.Method == "POST" {
-		ResetData()
+		games.ResetData()
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 	}
 
@@ -144,42 +92,20 @@ func Info(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func SendJqueryJs(w http.ResponseWriter, r *http.Request) {
-	data, err := ioutil.ReadFile("anim.js")
-	if err != nil {
-		http.Error(w, "Couldn't read file", http.StatusInternalServerError)
-		return
-	}
-	w.Header().Set("Content-Type", "application/javascript; charset=utf-8")
-	_, err = w.Write(data)
-	if err != nil {
-		return
-	}
-}
-
-func TimerHandler(w http.ResponseWriter, r *http.Request) {
-	timer := api.CurrentSong.Timer
-	w.Header().Set("content-Type", "application/json")
-	_, err := fmt.Fprintf(w, `{"time": %d}`, timer)
-	if err != nil {
-		return
-	}
+func redirect(w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, "/GuessTheSong", http.StatusSeeOther)
 }
 
 func main() {
-	api.LoadData()
-	go StartTimer()
-	http.HandleFunc("/", Index)
-	http.HandleFunc("/lose", Lost)
-	http.HandleFunc("/win", Win)
-	http.HandleFunc("/info", Info)
-	http.HandleFunc("/anim.js", SendJqueryJs)
-	http.HandleFunc("/timer", TimerHandler)
+	http.HandleFunc("/", redirect)
+	http.HandleFunc("/GuessTheSong", GuessTheSong)
+	http.HandleFunc("/GuessTheSongLose", GuessTheSongLose)
+	http.HandleFunc("/GuessTheSongWin", GuessTheSongWin)
+	http.HandleFunc("/GuessTheSongInfo", GuessTheSongInfo)
+
 	fs := http.FileServer(http.Dir("./static/"))
-	fs2 := http.FileServer(http.Dir("images/"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
-	http.Handle("/images/", http.StripPrefix("/images/", fs2))
-	print("http://localhost:8000/")
+
 	err := http.ListenAndServe(":8000", nil)
 	if err != nil {
 		return
