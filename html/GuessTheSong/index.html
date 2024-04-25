@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guess the song</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,300..700;1,300..700&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Satisfy&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/GuessTheSong.css">
+</head>
+
+<body>
+    <div class="title-top">Guess the song 🎼</div>
+    <div class="scoreBoard">
+        {{.Scores}}/50Pts
+        {{.RemainingAttempts}}Attempts
+    </div>
+
+    <div class="player">
+        <div class="lyrics">
+            <div class="divParoles">
+                <a href="/GuessTheSongInfo">info❗</a>
+                {{.LyricsSong}}
+            </div>
+        </div>
+        <div class="wrapper">
+            <div class="details">
+                <div class="track-art" id="rotate">
+                </div>
+                <div class="track-name">
+                </div>
+                <div class="track-artist">
+                    <div class="cheatMess">
+                    {{.CheatMess}}
+                    </div>
+                </div>
+            </div>
+
+            <div class="container">
+                <span class="wave"></span>
+                <span class="wave"></span>
+                <span class="wave"></span>
+                <span class="wave"></span>
+                <span class="wave"></span>
+            </div>
+
+            <p id="timeRemaining">Il reste 10 secondes de musique </p>
+
+            <form action="/" method="post">
+                <div class="inputResquest">
+                    <input class="requestSong" type="text" placeholder="Music Name..." name="value" autocomplete="off">
+                    <button class="Mybtn" type="submit">Send</button>
+                </div>
+            </form>
+        </div>
+    </div>
+   
+    <script src="/static/js/timer.js"></script>
+</body>
+
+</html>

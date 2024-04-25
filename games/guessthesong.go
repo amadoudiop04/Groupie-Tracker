@@ -1,0 +1,268 @@
+package games
+
+import (
+	"context"
+	"crypto/rand"
+	"encoding/binary"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"io"
+	"log"
+	"net/http"
+	"strings"
+	"unicode"
+
+	"github.com/zmb3/spotify"
+	"golang.org/x/oauth2/clientcredentials"
+)
+
+type dataImage struct {
+	imageUrl string
+}
+
+var data = dataImage{
+	imageUrl: "",
+}
+
+var GameIndex int
+var MyPlaylist *spotify.FullPlaylist
+var track *spotify.FullTrack
+var TheLyrics string
+
+func ApiTrack() *spotify.FullTrack {
+	authConfig := &clientcredentials.Config{
+		ClientID:     "a8795237d8ea48a09bc79862cf40c00b",
+		ClientSecret: "8847d2dc62fc4948b882a1069e16cb35",
+		TokenURL:     spotify.TokenURL,
+	}
+
+	accessToken, err := authConfig.Token(context.Background())
+	if err != nil {
+		log.Fatalf("error retrieve access token: %v", err)
+	}
+
+	client := spotify.Authenticator{}.NewClient(accessToken)
+
+	playlistID := spotify.ID("37i9dQZF1E37xpTgH5tN1Z?si=e6ee0165030640af")
+	playlist, err := client.GetPlaylist(playlistID)
+	MyPlaylist = playlist
+	if err != nil {
+		log.Fatalf("error retrieve playlist data: %v", err)
+	}
+
+	log.Println("playlist id:", playlist.ID)
+	log.Println("playlist name:", playlist.Name)
+	log.Println("playlist description:", playlist.Description)
+
+	//log.Println(" le fameu playlist", playlist)
+	//log.Println(" le fameu playlist", MyPlaylist)
+
+	for {
+		Max := len(playlist.Tracks.Tracks)
+		randomIndex := GetRandomIndex(Max)
+
+		GameIndex = randomIndex
+
+		track = &playlist.Tracks.Tracks[randomIndex].Track
+
+		artist := GetArtistsNames(track.Artists)
+		title := track.Name
+
+		lyrics, err := GetLyrics(artist, title)
+		TheLyrics = lyrics
+		log.Println("le lyrics", lyrics)
+		if err != nil || lyrics == "" {
+			log.Printf("No lyrics found for %s by %s, skipping...", title, artist)
+			continue
+		}
+		log.Println("Track Name", track.Name)
+		log.Println("Artists(s)", GetArtistsNames(track.Artists))
+
+		artistID := track.Artists[0].ID
+		artistDetails, err := client.GetArtist(artistID)
+		if err != nil {
+			log.Printf("Error retrieving artist details: %v", err)
+		} else {
+			log.Println("Artist Image URL:", artistDetails.Images[0].URL)
+		}
+
+		artistImageURL := ""
+		if len(artistDetails.Images) > 0 {
+			artistImageURL = artistDetails.Images[0].URL
+		}
+
+		data.imageUrl = artistImageURL
+
+		break
+	}
+
+	return track
+}
+
+func GetRandomIndex(max int) int {
+	var randomIndex int
+	if max > 0 {
+		buf := make([]byte, 8)
+		_, err := rand.Read(buf)
+		if err != nil {
+			log.Fatalf("error generating random index: %v", err)
+		}
+		randomIndex = int(binary.BigEndian.Uint64(buf) % uint64(max))
+	}
+	return randomIndex
+}
+
+func GetArtistsNames(artists []spotify.SimpleArtist) string {
+	var names []string
+	for _, artist := range artists {
+		names = append(names, artist.Name)
+	}
+	return fmt.Sprintf("%v", names)
+}
+
+func GetTrackInfo(playlist *spotify.FullPlaylist) (*spotify.FullTrack, error) {
+	fmt.Println(GameIndex)
+	if playlist == nil || len(playlist.Tracks.Tracks) == 0 {
+		return nil, errors.New("empty or nil playlist")
+	}
+
+	GameIndex = (GameIndex + 1) % len(playlist.Tracks.Tracks)
+	if TheLyrics != "" {
+		if GameIndex < 0 {
+			GameIndex = 0
+		} else {
+			GameIndex = (GameIndex + 1) % len(playlist.Tracks.Tracks)
+		}
+		return &playlist.Tracks.Tracks[GameIndex].Track, nil
+	}
+	fmt.Println(GameIndex)
+	// fmt.Println(playlist.Tracks.Tracks)
+	return &playlist.Tracks.Tracks[GameIndex].Track, nil
+}
+
+func NextTracks() {
+	CurrentSong.ThePlaylist = MyPlaylist
+	nextTrack, err := GetTrackInfo(CurrentSong.ThePlaylist)
+	if err != nil {
+		return
+	}
+
+	artist := GetArtistsNames(nextTrack.Artists)
+	title := nextTrack.Name
+
+	lyrics, err := GetLyrics(artist, title)
+	if err != nil || lyrics == "" {
+		log.Printf("Failed to retrieve lyrics for %s by %s, skipping...", title, artist)
+		NextTracks()
+		return
+	}
+
+	CurrentSong.Singer = artist
+	CurrentSong.TitleSong = title
+	CurrentSong.LyricsSong = lyrics
+	CurrentSong.Timer = 30
+}
+
+type Song struct {
+	Singer            string
+	TitleSong         string
+	LyricsSong        string
+	ImageURL          string
+	CheatMess         string
+	Scores            int
+	RemainingAttempts int
+	Timer             int
+	ThePlaylist       *spotify.FullPlaylist
+}
+
+type LyricsResponse struct {
+	Lyrics string `json:"lyrics"`
+}
+
+var CurrentSong = Song{
+	Singer:            "",
+	TitleSong:         "",
+	LyricsSong:        "",
+	ImageURL:          "",
+	Scores:            0,
+	RemainingAttempts: 5,
+	Timer:             30,
+	ThePlaylist:       nil,
+	CheatMess:         "",
+}
+
+func GetLyrics(artist, title string) (string, error) {
+	url := fmt.Sprintf("https://api.lyrics.ovh/v1/%s/%s", artist, title)
+	resp, err := http.Get(url)
+	if err != nil {
+		return "", err
+	}
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			return
+		}
+	}(resp.Body)
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("failed to retrieve lyrics, status code: %d", resp.StatusCode)
+	}
+
+	var lyricsResponse LyricsResponse
+	if err := json.NewDecoder(resp.Body).Decode(&lyricsResponse); err != nil {
+		return "", err
+	}
+
+	lines := strings.Split(lyricsResponse.Lyrics, "\n")
+	return strings.Join(lines[:20], "\n"), nil
+}
+
+func LoadData() {
+	track := ApiTrack()
+	artist := GetArtistsNames(track.Artists)
+	title := track.Name
+
+	lyrics, err := GetLyrics(artist, title)
+	if err != nil {
+		log.Fatalf("error retrieving lyrics: %v", err)
+	}
+
+	CurrentSong.Singer = artist
+	CurrentSong.TitleSong = title
+	CurrentSong.LyricsSong = lyrics
+	CurrentSong.ImageURL = data.imageUrl
+
+	fmt.Println("artist", artist)
+	fmt.Println("Title", title)
+	fmt.Println("lyrics :", lyrics)
+	fmt.Println("imageUrl:", data.imageUrl)
+	// fmt.Println("artist" , currentSong.Singer)
+	// fmt.Println("Title", currentSong.TitleSong)
+	// fmt.Println("lyrics :", currentSong.LyricsSong)
+}
+
+func ResetData() {
+	CurrentSong.Scores = 0
+	CurrentSong.RemainingAttempts = 5
+	CurrentSong.Timer = 30
+}
+
+func RemoveAccents(input string) string {
+	var output string
+	for _, char := range input {
+		if unicode.Is(unicode.Mn, char) {
+			continue
+		}
+		output += string(char)
+	}
+	return output
+}
+
+func CompareStrings(input1, input2 string) bool {
+
+	input1 = RemoveAccents(strings.ToLower(input1))
+	input2 = RemoveAccents(strings.ToLower(input2))
+
+	return input1 == input2
+}
