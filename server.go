@@ -299,7 +299,7 @@ func EndBlindtest(w http.ResponseWriter, r *http.Request) {
 
 func GuessTheSong(w http.ResponseWriter, r *http.Request) {
 	games.LoadData()
-	w.Header().Set("Refresh", "16")
+	w.Header().Set("Refresh", "20")
 	html := template.Must(template.ParseFiles("html/GuessTheSong/index.html"))
 	if r.Method == "POST" {
 
