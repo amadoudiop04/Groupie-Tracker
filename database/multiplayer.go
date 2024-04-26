@@ -15,8 +15,7 @@ type Room struct {
 }
 
 func CreateRoom(db *sql.DB, createdBy int, maxPlayers int, name string, gameID int) error {
-	_, err := db.Exec("INSERT INTO ROOMS (created_by, max_player, name, id_game) VALUES (?, ?, ?, ?)",
-		createdBy, maxPlayers, name, gameID)
+	_, err := db.Exec("INSERT INTO ROOMS (created_by, max_player, name, id_game) VALUES (?, ?, ?, ?)", createdBy, maxPlayers, name, gameID)
 	if err != nil {
 		log.Println("Error creating room:", err)
 	}

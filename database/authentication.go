@@ -105,7 +105,7 @@ func AuthenticateUser(username, password string) (bool, error) {
 func DisplayUserTable(rows *sql.Rows) {
 	for rows.Next() {
 		var users User
-		err := rows.Scan(&users.id, &users.pseudo, &users.email, &users.password)
+		err := rows.Scan(&users.Id, &users.Pseudo, &users.Email, &users.Password)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -128,8 +128,8 @@ func selectValueFromTable(db *sql.DB, table string, value string) *sql.Rows {
 //structures
 
 type User struct {
-	id       int
-	pseudo   string
-	email    string
-	password string
+	Id       int
+	Pseudo   string
+	Email    string
+	Password string
 }

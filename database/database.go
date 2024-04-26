@@ -52,3 +52,35 @@ func InitTable(database string) *sql.DB {
 
 	return db
 }
+
+func GetUserID(username string) (string, error) {
+	db := InitTable("USER")
+	defer db.Close()
+
+	var userID string
+	err := db.QueryRow("SELECT id FROM USER WHERE pseudo = ?", username).Scan(&userID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return "", nil
+		}
+		log.Println("Erreur lors de la récupération de l'ID de l'utilisateur:", err)
+		return "", err
+	}
+
+	return userID, nil
+}
+
+func GetUserData(ID string) (User, error) {
+	db := InitTable("USER")
+	defer db.Close()
+
+	var user User
+	err := db.QueryRow("SELECT id, pseudo, email, password FROM USER WHERE id = ?", ID).
+		Scan(&user.Id, &user.Pseudo, &user.Email, &user.Password)
+	if err != nil {
+		log.Println("Erreur lors de la récupération des données de l'utilisateur:", err)
+		return User{}, err
+	}
+
+	return user, nil
+}

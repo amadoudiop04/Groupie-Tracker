@@ -67,7 +67,7 @@ fetch('/static/json/data.json')
             let div = document.createElement("div"); 
             let img = document.createElement("img");
 
-            img.src = artist.images.lg;
+            img.src = artist.image;
             img.style.height = "200px";
             img.style.width = "200px";
 

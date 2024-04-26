@@ -83,9 +83,24 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if canConnect {
+		sessionID, err := database.GetUserID(username)
+
+		if err != nil {
+			http.Error(w, "Erreur de récupération de l'ID de session", http.StatusInternalServerError)
+			return
+		}
+
+		cookie := http.Cookie{
+			Name:     "session_id",
+			Value:    sessionID,
+			Path:     "/",
+			HttpOnly: true,
+			MaxAge:   2592000,
+		}
+
+		http.SetCookie(w, &cookie)
 		http.Redirect(w, r, "/Home", http.StatusSeeOther)
 	} else {
-
 		data := struct {
 			ErrorMessage string
 		}{
@@ -149,8 +164,26 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		} else {
+			sessionID, err := database.GetUserID(username)
+
+			if err != nil {
+				http.Error(w, "Erreur de récupération de l'ID de session", http.StatusInternalServerError)
+				return
+			}
+
+			cookie := http.Cookie{
+				Name:     "session_id",
+				Value:    sessionID,
+				Path:     "/",
+				HttpOnly: true,
+				MaxAge:   2592000,
+			}
+
+			http.SetCookie(w, &cookie)
+
 			rowsUsers := database.SelectAllFromTable(db, "USER")
 			database.DisplayUserTable(rowsUsers) //--> show the table with the new user
+
 			http.Redirect(w, r, "/Home", http.StatusSeeOther)
 		}
 	}
@@ -267,7 +300,32 @@ func HomePage(w http.ResponseWriter, r *http.Request) {
 }
 
 func UserProfile(w http.ResponseWriter, r *http.Request) {
-	renderTemplate(w, "Home/UserProfile.html", nil)
+	cookie, err := r.Cookie("session_id")
+	if err != nil {
+		http.Redirect(w, r, "/Login", http.StatusSeeOther)
+		return
+	}
+
+	sessionID := cookie.Value
+
+	user, err := database.GetUserData(sessionID)
+	if err != nil {
+		log.Println("Erreur lors de la récupération des données de l'utilisateur:", err)
+		http.Error(w, "Erreur lors de la récupération des données de l'utilisateur", http.StatusInternalServerError)
+		return
+	}
+
+	userData := struct {
+		ID       int
+		Username string
+		Email    string
+	}{
+		ID:       user.Id,
+		Username: user.Pseudo,
+		Email:    user.Email,
+	}
+
+	renderTemplate(w, "Home/UserProfile.html", userData)
 }
 
 func BlindtestLandingPage(w http.ResponseWriter, r *http.Request) {
