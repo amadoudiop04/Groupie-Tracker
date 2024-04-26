@@ -16,10 +16,10 @@ import (
 )
 
 func main() {
-	db := database.InitDatabase("USER")
+	db := database.InitTable("USER")
 	defer db.Close()
 
-	db.Exec("DELETE FROM USER WHERE id > 1;") //--> Remove some users
+	db.Exec("DELETE FROM USER WHERE id > 1;") //--> Remove users with id > 1  /!\ TO REMOVE BEFORE DEPLOYMENT /!\
 
 	rowsUsers := database.SelectAllFromTable(db, "USER")
 	database.DisplayUserTable(rowsUsers) //--> Show the table USER in terminal
@@ -100,7 +100,7 @@ func RegisterPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
-	db := database.InitDatabase("USER")
+	db := database.InitTable("USER")
 	defer db.Close()
 
 	username := r.FormValue("username")
@@ -161,7 +161,7 @@ func PasswordForgottenPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func PasswordForgottenHandler(w http.ResponseWriter, r *http.Request) {
-	db := database.InitDatabase("USER")
+	db := database.InitTable("USER")
 	defer db.Close()
 
 	email := strings.ReplaceAll(r.FormValue("email"), " ", "")
@@ -185,6 +185,7 @@ func PasswordForgottenHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		renderTemplate(w, "Login/PasswordForgotten.html", data)
 	} else {
+		// 			/!\ IT DOES'NT WORK FOR NOW /!\
 		// Sender data
 		from := "help.groupietracker@gmail.com"
 		password := "GTamyagoGT"
@@ -229,7 +230,7 @@ func ResetPasswordPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func ResetPasswordHandler(w http.ResponseWriter, r *http.Request) {
-	db := database.InitDatabase("USER")
+	db := database.InitTable("USER")
 	defer db.Close()
 
 	password := r.FormValue("password")
@@ -262,11 +263,11 @@ func ResetPasswordHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func HomePage(w http.ResponseWriter, r *http.Request) {
-	renderTemplate(w, "Home.html", nil)
+	renderTemplate(w, "Home/Home.html", nil)
 }
 
 func UserProfile(w http.ResponseWriter, r *http.Request) {
-	renderTemplate(w, "UserProfile.html", nil)
+	renderTemplate(w, "Home/UserProfile.html", nil)
 }
 
 func BlindtestLandingPage(w http.ResponseWriter, r *http.Request) {
@@ -384,5 +385,5 @@ func GuessTheSongInfo(w http.ResponseWriter, r *http.Request) {
 }
 
 func Petitbac(w http.ResponseWriter, r *http.Request) {
-	renderTemplate(w, "Petitbac.html", nil)
+	renderTemplate(w, "PetitBac/index.html", nil)
 }

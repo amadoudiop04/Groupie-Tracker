@@ -1,38 +1,26 @@
 [
     {
-        "name": "daily-mix",
+        "name": "Youssou Ndour",
         "images": {
-            "xs": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT-6db6lYy5waWQIXhjCX0jzUAOMvbw_7LTxg&s",
-            "sm": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT-6db6lYy5waWQIXhjCX0jzUAOMvbw_7LTxg&s",
-            "md": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT-6db6lYy5waWQIXhjCX0jzUAOMvbw_7LTxg&s",
-            "lg": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT-6db6lYy5waWQIXhjCX0jzUAOMvbw_7LTxg&s"
+            "lg": "https://yt3.googleusercontent.com/ytc/AIdro_nemT1EWinc0trVxMB0ePt-0d4czp_BNDe6BIenkbIQpBI=s900-c-k-c0x00ffffff-no-rj"
         }
     },
     {
-        "name": "daily-mix-1",
+        "name": "Biglo & Oli",
         "images": {
-            "xs": "https://www.zimbalam.fr/wp-content/uploads/2023/10/1696915494_21-Savage-citoyen-americain-nouvellement-permanent-annonce-son-premier-spectacle.jpg",
-            "sm": "https://www.zimbalam.fr/wp-content/uploads/2023/10/1696915494_21-Savage-citoyen-americain-nouvellement-permanent-annonce-son-premier-spectacle.jpg",
-            "md": "https://www.zimbalam.fr/wp-content/uploads/2023/10/1696915494_21-Savage-citoyen-americain-nouvellement-permanent-annonce-son-premier-spectacle.jpg",
-            "lg": "https://www.zimbalam.fr/wp-content/uploads/2023/10/1696915494_21-Savage-citoyen-americain-nouvellement-permanent-annonce-son-premier-spectacle.jpg"
+            "lg": "https://cdns-images.dzcdn.net/images/artist/3b41169cf03e1787462612f7c82ad0bb/500x500.jpg"
         }
     },
     {
-        "name": "daily-mix-2",
+        "name": "Aya Nakamura",
         "images": {
-            "xs": "https://img.buzzfeed.com/buzzfeed-static/complex/images/yjh9lfmvnujwwxctsipc/nemzzz-interview-nemzzz-interview.jpg",
-            "sm": "https://img.buzzfeed.com/buzzfeed-static/complex/images/yjh9lfmvnujwwxctsipc/nemzzz-interview-nemzzz-interview.jpg",
-            "md": "https://img.buzzfeed.com/buzzfeed-static/complex/images/yjh9lfmvnujwwxctsipc/nemzzz-interview-nemzzz-interview.jpg",
-            "lg": "https://img.buzzfeed.com/buzzfeed-static/complex/images/yjh9lfmvnujwwxctsipc/nemzzz-interview-nemzzz-interview.jpg"
+            "lg": "https://i1.sndcdn.com/artworks-6d82bce3-995c-4951-bf9d-6097d05c1dac-0-t500x500.jpg"
         }
     },
     {
-        "name": "daily-mix-3",
+        "name": "Adele",
         "images": {
-            "xs": "https://imgproxy.ra.co/_/quality:66/aHR0cHM6Ly9zdGF0aWMucmEuY28vaW1hZ2VzL3Byb2ZpbGVzL3NxdWFyZS9jZW50cmFsY2VlLmpwZz9kYXRlVXBkYXRlZD0xNjc0NjQ2MTg4MDAw",
-            "sm": "https://imgproxy.ra.co/_/quality:66/aHR0cHM6Ly9zdGF0aWMucmEuY28vaW1hZ2VzL3Byb2ZpbGVzL3NxdWFyZS9jZW50cmFsY2VlLmpwZz9kYXRlVXBkYXRlZD0xNjc0NjQ2MTg4MDAw",
-            "md": "https://imgproxy.ra.co/_/quality:66/aHR0cHM6Ly9zdGF0aWMucmEuY28vaW1hZ2VzL3Byb2ZpbGVzL3NxdWFyZS9jZW50cmFsY2VlLmpwZz9kYXRlVXBkYXRlZD0xNjc0NjQ2MTg4MDAw",
-            "lg": "https://imgproxy.ra.co/_/quality:66/aHR0cHM6Ly9zdGF0aWMucmEuY28vaW1hZ2VzL3Byb2ZpbGVzL3NxdWFyZS9jZW50cmFsY2VlLmpwZz9kYXRlVXBkYXRlZD0xNjc0NjQ2MTg4MDAw"
+            "lg": "https://m.media-amazon.com/images/I/61lMwNQGYbL._UF1000,1000_QL80_DpWeblab_.jpg"
         }
     }
 ]
