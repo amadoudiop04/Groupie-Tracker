@@ -96,11 +96,6 @@ html:not(.dark-style) .account-settings-links .list-group-item.active {
     border-color: rgba(24, 28, 33, 0.03) !important;
 }
 
-img{
-border-radius: 50%;
-}
-
-
 .sidebar {
     height: 100%;
     width: 4%; 
@@ -151,13 +146,12 @@ border-radius: 50%;
     display: block;
 }
 
-
-.icone-2{
+.icone, .icone-2{
     display: flex;
     margin: 10%;
 }
 
-.icone-2{
+img{
     border-radius: 100px;
     margin: 5%;
     transition: transform 0.3s ease;
@@ -168,6 +162,11 @@ img:hover{
     transform: scale(1.1);
 }
 
+.form-group i {
+    position: absolute;
+    right: 20px;
+    font-size: 20px;
+}
 
 @media screen and (max-width: 1200px) {
     .sidebar {

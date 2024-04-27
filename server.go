@@ -36,6 +36,7 @@ func main() {
 	http.HandleFunc("/ResetPasswordHandler", ResetPasswordHandler)
 	http.HandleFunc("/Home", HomePage)
 	http.HandleFunc("/UserProfile", UserProfile)
+	http.HandleFunc("/UserProfileHandler", UserProfileHandler)
 	http.HandleFunc("/BlindtestLandingPage", BlindtestLandingPage)
 	http.HandleFunc("/Blindtest", Blindtest)
 	http.HandleFunc("/EndBlindtest", EndBlindtest)
@@ -316,16 +317,79 @@ func UserProfile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userData := struct {
-		ID       int
-		Username string
-		Email    string
+		ID           int
+		Username     string
+		Email        string
+		ErrorMessage string
 	}{
-		ID:       user.Id,
-		Username: user.Pseudo,
-		Email:    user.Email,
+		ID:           user.Id,
+		Username:     user.Pseudo,
+		Email:        user.Email,
+		ErrorMessage: "",
+	}
+	renderTemplate(w, "Home/UserProfile.html", userData)
+}
+
+func UserProfileHandler(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("session_id")
+	if err != nil {
+		http.Redirect(w, r, "/Login", http.StatusSeeOther)
+		return
 	}
 
-	renderTemplate(w, "Home/UserProfile.html", userData)
+	sessionID := cookie.Value
+
+	user, err := database.GetUserData(sessionID)
+	if err != nil {
+		log.Println("Erreur lors de la récupération des données de l'utilisateur:", err)
+		http.Error(w, "Erreur lors de la récupération des données de l'utilisateur", http.StatusInternalServerError)
+		return
+	}
+
+	username := database.ReplaceEmptyString(r.FormValue("usernameInput"), user.Pseudo)
+	email := database.ReplaceEmptyString(r.FormValue("emailInput"), user.Email)
+	currentPassword := r.FormValue("currentPasswordInput")
+	newPassword := r.FormValue("newPasswordInput")
+	confirmNewPassword := r.FormValue("confirmNewPasswordInput")
+
+	userData := struct {
+		ID           int
+		Username     string
+		Email        string
+		ErrorMessage string
+	}{
+		ID:           user.Id,
+		Username:     user.Pseudo,
+		Email:        user.Email,
+		ErrorMessage: "",
+	}
+
+	if currentPassword == "" {
+		err = database.SetUserData(sessionID, username, email, user.Password)
+		if err != nil {
+			log.Println("Erreur lors de la mise à jour des données de l'utilisateur:", err)
+			http.Error(w, "Erreur lors de la mise à jour des données de l'utilisateur", http.StatusInternalServerError)
+			return
+		}
+		http.Redirect(w, r, "/UserProfile", http.StatusSeeOther)
+	} else if database.HashPassword(currentPassword) != user.Password {
+		userData.ErrorMessage = "Le mot de passe actuel saisit est incorrect."
+		renderTemplate(w, "Home/UserProfile.html", userData)
+	} else if newPassword != confirmNewPassword {
+		userData.ErrorMessage = "Le mot de passe et la confirmation du mot de passe ne correspondent pas."
+		renderTemplate(w, "Home/UserProfile.html", userData)
+	} else if !database.VerifyPassword(newPassword) {
+		userData.ErrorMessage = "Votre nouveau mot de passe doit contenir 12 caractères comprenant des majuscules, des minuscules, des chiffres et des caractères spéciaux."
+		renderTemplate(w, "Home/UserProfile.html", userData)
+	} else {
+		err = database.SetUserData(sessionID, username, email, database.HashPassword(newPassword))
+		if err != nil {
+			log.Println("Erreur lors de la mise à jour des données de l'utilisateur:", err)
+			http.Error(w, "Erreur lors de la mise à jour des données de l'utilisateur", http.StatusInternalServerError)
+			return
+		}
+		http.Redirect(w, r, "/UserProfile", http.StatusSeeOther)
+	}
 }
 
 func BlindtestLandingPage(w http.ResponseWriter, r *http.Request) {

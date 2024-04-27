@@ -98,7 +98,6 @@ h1 {
 .icone{
     display: flex;
     margin: 10%;
-
 }
 
 .icone-2{
@@ -107,7 +106,7 @@ h1 {
 }
 
 .btn-containers{
-text-align: center;
+    text-align: center;
 }
 
 .buttons{
@@ -136,10 +135,8 @@ text-align: center;
 }
 
 img{
-    border-radius: 100px;
     margin: 5%;
     transition: transform 0.3s ease;
-    border: solid black;
 }
 
 

@@ -84,3 +84,16 @@ func GetUserData(ID string) (User, error) {
 
 	return user, nil
 }
+
+func SetUserData(ID, pseudo, email, password string) error {
+	db := InitTable("USER")
+	defer db.Close()
+
+	_, err := db.Exec("UPDATE USER SET pseudo = ?, email = ?, password = ? WHERE id = ?", pseudo, email, password, ID)
+	if err != nil {
+		log.Println("Erreur lors de la mise à jour des données de l'utilisateur:", err)
+		return err
+	}
+
+	return nil
+}

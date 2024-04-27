@@ -125,6 +125,13 @@ func selectValueFromTable(db *sql.DB, table string, value string) *sql.Rows {
 	return result
 }
 
+func ReplaceEmptyString(value, defaultValue string) string {
+	if value == "" {
+		return defaultValue
+	}
+	return value
+}
+
 //structures
 
 type User struct {
