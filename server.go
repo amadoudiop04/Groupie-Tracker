@@ -40,6 +40,7 @@ func main() {
 	http.HandleFunc("/BlindtestLandingPage", BlindtestLandingPage)
 	http.HandleFunc("/Blindtest", Blindtest)
 	http.HandleFunc("/EndBlindtest", EndBlindtest)
+	http.HandleFunc("/GuessTheSongLandingPage", GuessTheSongLandingPage)
 	http.HandleFunc("/GuessTheSong", GuessTheSong)
 	http.HandleFunc("/GuessTheSongLose", GuessTheSongLose)
 	http.HandleFunc("/GuessTheSongWin", GuessTheSongWin)
@@ -420,6 +421,10 @@ func EndBlindtest(w http.ResponseWriter, r *http.Request) {
 	renderTemplate(w, "BlindTest/EndGame.html", nil)
 }
 
+func GuessTheSongLandingPage(w http.ResponseWriter, r *http.Request) {
+	renderTemplate(w, "GuessTheSong/LandingPage.html", nil)
+}
+
 func GuessTheSong(w http.ResponseWriter, r *http.Request) {
 	games.LoadData()
 	w.Header().Set("Refresh", "20")
@@ -465,7 +470,7 @@ func GuessTheSong(w http.ResponseWriter, r *http.Request) {
 }
 
 func GuessTheSongLose(w http.ResponseWriter, r *http.Request) {
-	html := template.Must(template.ParseFiles("html/GuessTheSong/lose.html"))
+	html := template.Must(template.ParseFiles("html/GuessTheSong/Lose.html"))
 
 	if r.Method == "POST" {
 		games.ResetData()
@@ -479,7 +484,7 @@ func GuessTheSongLose(w http.ResponseWriter, r *http.Request) {
 }
 
 func GuessTheSongWin(w http.ResponseWriter, r *http.Request) {
-	html := template.Must(template.ParseFiles("html/GuessTheSong/win.html"))
+	html := template.Must(template.ParseFiles("html/GuessTheSong/Win.html"))
 
 	if r.Method == "POST" {
 		games.ResetData()
@@ -493,7 +498,7 @@ func GuessTheSongWin(w http.ResponseWriter, r *http.Request) {
 }
 
 func GuessTheSongInfo(w http.ResponseWriter, r *http.Request) {
-	html := template.Must(template.ParseFiles("html/GuessTheSong/info.html"))
+	html := template.Must(template.ParseFiles("html/GuessTheSong/Info.html"))
 
 	if r.Method == "POST" {
 		games.ResetData()

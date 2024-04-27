@@ -9,7 +9,7 @@ body {
   color: white;
   display: flex;
   justify-content: center;
-  font-size: 1em;
+  font-size: 25px;
   font-family: "Satisfy", cursive;
   font-weight: 400;
   font-style: normal;
@@ -83,20 +83,6 @@ body {
   color: black;
 }
 
-.playpause-track,
-.prev-track,
-.next-track {
-  padding: 25px;
-  opacity: 0.8;
-  transition: opacity .2s;
-}
-
-.playpause-track:hover,
-.prev-track:hover,
-.next-track:hover {
-  opacity: 1.0;
-}
-
 
 .seek_slider:hover,
 .volume_slider:hover {
@@ -124,7 +110,6 @@ body {
     transform: rotate(359deg);
   }
 }
-
 
 .inputResquest,
 .Mybtn {
@@ -202,8 +187,6 @@ body {
   animation: waveloader 2s infinite linear;
 }
 
-
-
 .wave:nth-child(1) {
   animation-delay: 0s;
 }
@@ -235,7 +218,52 @@ body {
   }
 }
 
+.audioContainer{
+  align-content: center;
+  text-align: center;
+  background: linear-gradient(to bottom right,#50ffd3,#6A5ACD);
+  border-radius: 20px;
+  height: 450px;
+  width: 50%; 
+}
 
-.cheatMess {
-  color: red;
+.container-block{
+  display: flex;
+  justify-content: center;
+  margin: 7%;
+}
+
+.deco-Img{
+  background: center / cover no-repeat url("https://m.media-amazon.com/images/I/81NF853al9L.png");
+  transform: translateX(110%);
+  border: solid 1px black;
+  height: 30%;
+  width: 30%;
+  border-radius: 50%;
+  -moz-box-shadow: 0px 6px 5px black;
+  -webkit-box-shadow: 0px 6px 5px black;
+  box-shadow: 0px 6px 5px black;
+  -moz-border-radius: 190px;
+  -webkit-border-radius: 190px;
+  margin: 10px;
+  margin-bottom: 40px;
+}
+
+.RoomsButtons{
+  margin: 7.7%;
+}
+
+.RoomsButton {
+  width: 250px;
+  height: 50px;
+  margin-top: 20px;
+  margin-left: 5px;
+  margin-right: 5px;
+  font-size: 20px;
+  font-family: 'Times New Roman', Times, serif;
+  cursor: pointer;
+  background: linear-gradient(to left, #35bfc6, #97eaef);
+  color: rgb(0, 0, 0);
+  border: 0.5px black solid;
+  border-radius: 5px;
 }

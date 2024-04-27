@@ -1,33 +1,31 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 
 <head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400..700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Satisfy&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" Content="IE-edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> Groupie Tracker </title>
-    <link rel="stylesheet" href="/static/css/login.css">
-    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="/static/css/guessTheSong.css">
+    <title>Groupie Tracker - Guess the song</title>
 </head>
 
 <body>
-    <div class="wrapper">
-        <form id="loginForm" action="/AccountRecoveryHandler" method="POST">
-            <h1>Retrouvez</h1>
-            <h1>votre compte</h1>
-
-            <div class="input-box">
-                <input id="recoveryCode" name="recoveryCode" type="text" placeholder="Code de récupération" required>
-                <i class='bx bxs-lock-alt' ></i>
-            </div>
-
-            {{if .ErrorMessage}}
-            <p style="color: red; text-align: center; margin-bottom: 10px;">{{.ErrorMessage}}</p>
-            {{end}}
-
-            <button type="submit" class="btn">Valider</button>
-        </form>
-    </div>
-</body>
+    <h1 class="title-top">Guess the song</h1>
     
+    <div class="container-block">
+        <div class="audioContainer">
+            <div class="deco-Img">    
+        </div>
+        <div class="RoomsButtons">
+            <a href="/CreatePrivateGuessTheSong"><button class="RoomsButton">Créer un serveur privé</button></a>
+            <a href="/JoinPrivateGuessTheSong"><button class="RoomsButton">Rejoindre un serveur privé</button></a>
+            <a href="/GuessTheSong"><button class="RoomsButton">Rejoindre le serveur public</button></a>
+        </div>
+    </div>
+        
+</body>
+
 </html>
