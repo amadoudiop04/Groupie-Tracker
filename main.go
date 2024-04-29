@@ -6,18 +6,11 @@ import (
     "net/http"
 )
 
-var entries []map[string]string
-
 func main() {
     http.HandleFunc("/", handleHome)
     http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static/"))))
     log.Println("Serveur démarré sur :8080")
-    go func() {
-        log.Fatal(http.ListenAndServe(":8080", nil))
-    }()
-    
-    fmt.Println("Appuyez sur Entrée pour quitter...")
-    fmt.Scanln()
+    log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
 func handleHome(w http.ResponseWriter, r *http.Request) {
