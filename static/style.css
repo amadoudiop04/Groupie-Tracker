@@ -53,8 +53,7 @@ body {
 .wordsContainer {
     color: black;
     font-size: 2em;
-    font-family: "Jacquard 24", system-ui;
-    font-weight: 400;
+    font-weight: 300;
     font-style: normal;
 }
 
