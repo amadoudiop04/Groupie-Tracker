@@ -12,8 +12,70 @@ import (
 	"groupieTracker/database"
 	"groupieTracker/games"
 
+	"github.com/gorilla/websocket"
 	_ "github.com/mattn/go-sqlite3"
 )
+
+var upgrader = websocket.Upgrader{
+    ReadBufferSize:  1024,
+    WriteBufferSize: 1024,
+    CheckOrigin: func(r *http.Request) bool {
+        return true
+    },
+}
+
+var clients = make(map[*websocket.Conn]bool)
+var broadcast = make(chan []byte)
+
+func handleMessages() {
+	for {
+		msg := <-broadcast
+		for client := range clients {
+			err := client.WriteMessage(websocket.TextMessage, msg)
+			log.Println(msg)
+			if err != nil {
+				log.Printf("Error to send Message: %v", err)
+				client.Close()
+				delete(clients, client)
+			}
+		}
+	}
+}
+
+func websocketHandler(w http.ResponseWriter, r *http.Request) {
+	conn, err := upgrader.Upgrade(w, r, nil)
+
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	defer conn.Close()
+
+	clients[conn] = true // Add customer to customer map
+	for {
+		// read message from client
+		_, message, err := conn.ReadMessage()
+
+		if err != nil {
+			log.Println(err)
+			delete(clients, conn)
+			break
+		}
+		
+		broadcast <- message
+	}
+}
+
+func broadcastMessage(message []byte) {
+    for client := range clients {
+        err := client.WriteMessage(websocket.TextMessage, message)
+        if err != nil {
+            log.Printf("Erreur lors de l'envoi du message au client: %v", err)
+            client.Close()
+            delete(clients, client)
+        }
+    }
+}
 
 func main() {
 	db := database.InitTable("USER")
@@ -47,7 +109,8 @@ func main() {
 	http.HandleFunc("/GuessTheSongWin", GuessTheSongWin)
 	http.HandleFunc("/GuessTheSongRules", GuessTheSongRules)
 	http.HandleFunc("/Petitbac", Petitbac)
-
+	go handleMessages()
+	http.HandleFunc("/websocket", websocketHandler)
 	fs := http.FileServer(http.Dir("./static/"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
 
@@ -398,7 +461,7 @@ func BlindtestLandingPage(w http.ResponseWriter, r *http.Request) {
 	renderTemplate(w, "BlindTest/LandingPage.html", nil)
 }
 
-func Blindtest(w http.ResponseWriter, r *http.Request) {
+func Blindtest(w http.ResponseWriter, r *http.Request) {	
 	tracks := games.Api("6Xf0gjt1YmwvEG5iS8QOfg?si=2de553d01ff84abb")
 	tracks = games.RemovePlayedTracks(tracks)
 	currentTrack := games.NextTrack(tracks)
