@@ -152,3 +152,17 @@ body {
   border: 0.5px black solid;
   border-radius: 5px;
 }
+
+.RulesButton {
+  width: 150px;
+  height: 30px;
+  margin-left: 5px;
+  margin-right: 5px;
+  font-size: 15px;
+  font-family: 'Times New Roman', Times, serif;
+  cursor: pointer;
+  background: linear-gradient(to left, #35bfc6, #97eaef);
+  color: rgb(0, 0, 0);
+  border: 0.5px black solid;
+  border-radius: 5px;
+}

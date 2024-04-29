@@ -40,11 +40,12 @@ func main() {
 	http.HandleFunc("/BlindtestLandingPage", BlindtestLandingPage)
 	http.HandleFunc("/Blindtest", Blindtest)
 	http.HandleFunc("/EndBlindtest", EndBlindtest)
+	http.HandleFunc("/BlindtestRules", BlindtestRules)
 	http.HandleFunc("/GuessTheSongLandingPage", GuessTheSongLandingPage)
 	http.HandleFunc("/GuessTheSong", GuessTheSong)
 	http.HandleFunc("/GuessTheSongLose", GuessTheSongLose)
 	http.HandleFunc("/GuessTheSongWin", GuessTheSongWin)
-	http.HandleFunc("/GuessTheSongInfo", GuessTheSongInfo)
+	http.HandleFunc("/GuessTheSongRules", GuessTheSongRules)
 	http.HandleFunc("/Petitbac", Petitbac)
 
 	fs := http.FileServer(http.Dir("./static/"))
@@ -497,12 +498,26 @@ func GuessTheSongWin(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func GuessTheSongInfo(w http.ResponseWriter, r *http.Request) {
-	html := template.Must(template.ParseFiles("html/GuessTheSong/Info.html"))
+func GuessTheSongRules(w http.ResponseWriter, r *http.Request) {
+	html := template.Must(template.ParseFiles("html/GuessTheSong/Rules.html"))
 
 	if r.Method == "POST" {
 		games.ResetData()
 		http.Redirect(w, r, "/GuessTheSong", http.StatusSeeOther)
+	}
+
+	err := html.Execute(w, nil)
+	if err != nil {
+		return
+	}
+}
+
+func BlindtestRules(w http.ResponseWriter, r *http.Request) {
+	html := template.Must(template.ParseFiles("html/BlindTest/Rules.html"))
+
+	if r.Method == "POST" {
+		games.ResetData()
+		http.Redirect(w, r, "/Blindtest", http.StatusSeeOther)
 	}
 
 	err := html.Execute(w, nil)

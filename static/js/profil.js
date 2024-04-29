@@ -26,13 +26,11 @@ lightMode.addEventListener('click', function () {
         dropdownbtn.style.backgroundColor = "white";
         infoContainer.style.backgroundColor = "white";
         document.body.style.backgroundColor="#D3D3D3";
-
     } else {
         document.body.style.backgroundColor = "";
         topBar.style.backgroundColor = "";
         sidebar.style.backgroundColor = "";
         dropdownbtn.style.backgroundColor = "";
         document.body.style.backgroundColor="";
-        infoContainer.style.backgroundColor = "";
     }
 })

@@ -17,6 +17,7 @@ body {
     background-color: deepskyblue;
     border: solid 3px;
     font-size: 2em;
+    cursor: pointer;
 }
 
 .container {

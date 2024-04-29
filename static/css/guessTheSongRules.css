@@ -1,0 +1,34 @@
+
+body {
+    background: rgb(39, 38, 38);
+    height: 100%;
+    color: white;
+}
+
+.title-top {
+    margin: 5%;
+    display: flex;
+    justify-content: center;
+}
+
+.MyBB {
+    margin: 15px;
+    border-radius: 10px;
+    background-color: deepskyblue;
+    border: solid 3px;
+    font-size: 2em;
+    cursor: pointer;
+}
+
+.container {
+    background-color: #424040;
+    display: flex;
+    justify-content: center;
+    border: solid 3px;
+    border-radius: 10px;
+    height: auto;
+    width: auto;
+    white-space: pre-line;
+}
+
+
