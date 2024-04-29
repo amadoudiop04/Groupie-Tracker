@@ -20,31 +20,35 @@
             <div>
                 <div class="track-art"></div>
             </div>
+            <div class="wordsContainer">Lettre aléatoire:</div>
+            <div class="inputResquest">
+                <div id="randomLetter">{{.RandomLetter}}</div>
+            </div>
 
             <form action="/" method="post">
                 <div class="wordsContainer">Artiste</div>
                 <div class="inputResquest">
-                    <input class="requestWords" type="text" id="artiste" placeholder="mots...." name="artiste" autocomplete="off">
+                    <input class="requestWords" type="text" id="artiste" placeholder={{.RandomLetter}} name="artiste" autocomplete="off">
                 </div>
                 
                 <div class="wordsContainer">Album</div>
                 <div class="inputResquest">
-                    <input class="requestWords" type="text" id="album" placeholder="mots...." name="album" autocomplete="off">
+                    <input class="requestWords" type="text" id="album" placeholder={{.RandomLetter}}... name="album" autocomplete="off">
                 </div>
                 
                 <div class="wordsContainer">Groupe de musique</div>
                 <div class="inputResquest">
-                    <input class="requestWords" type="text" id="groupe" placeholder="mots...." name="groupe" autocomplete="off">
+                    <input class="requestWords" type="text" id="groupe" placeholder={{.RandomLetter}}... name="groupe" autocomplete="off">
                 </div> 
                 
                 <div class="wordsContainer">Instrument de musique</div>
                 <div class="inputResquest">
-                    <input class="requestWords" type="text" id="instrument" placeholder="mots...." name="instrument" autocomplete="off">
+                    <input class="requestWords" type="text" id="instrument" placeholder={{.RandomLetter}}... name="instrument" autocomplete="off">
                 </div>
                 
                 <div class="wordsContainer">Featuring</div>
                 <div class="inputResquest">
-                    <input class="requestWords" type="text" id="featuring" placeholder="mots...." name="featuring" autocomplete="off">
+                    <input class="requestWords" type="text" id="featuring" placeholder={{.RandomLetter}}... name="featuring" autocomplete="off">
                 </div>
                 
                 <button type="submit" class="mybtn">STOP🚨</button>
