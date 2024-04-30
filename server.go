@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"html/template"
 	"log"
+	"math/rand"
 	"net/http"
 	"net/smtp"
 	"strings"
+	"time"
 
 	"groupieTracker/database"
 	"groupieTracker/games"
@@ -17,11 +19,11 @@ import (
 )
 
 var upgrader = websocket.Upgrader{
-    ReadBufferSize:  1024,
-    WriteBufferSize: 1024,
-    CheckOrigin: func(r *http.Request) bool {
-        return true
-    },
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+	CheckOrigin: func(r *http.Request) bool {
+		return true
+	},
 }
 
 var clients = make(map[*websocket.Conn]bool)
@@ -61,20 +63,20 @@ func websocketHandler(w http.ResponseWriter, r *http.Request) {
 			delete(clients, conn)
 			break
 		}
-		
+
 		broadcast <- message
 	}
 }
 
 func broadcastMessage(message []byte) {
-    for client := range clients {
-        err := client.WriteMessage(websocket.TextMessage, message)
-        if err != nil {
-            log.Printf("Erreur lors de l'envoi du message au client: %v", err)
-            client.Close()
-            delete(clients, client)
-        }
-    }
+	for client := range clients {
+		err := client.WriteMessage(websocket.TextMessage, message)
+		if err != nil {
+			log.Printf("Erreur lors de l'envoi du message au client: %v", err)
+			client.Close()
+			delete(clients, client)
+		}
+	}
 }
 
 func main() {
@@ -108,7 +110,8 @@ func main() {
 	http.HandleFunc("/GuessTheSongLose", GuessTheSongLose)
 	http.HandleFunc("/GuessTheSongWin", GuessTheSongWin)
 	http.HandleFunc("/GuessTheSongRules", GuessTheSongRules)
-	http.HandleFunc("/Petitbac", Petitbac)
+	http.HandleFunc("/PetitBacLandingPage", PetitBacLandingPage)
+	http.HandleFunc("/PetitBac", PetitBac)
 	go handleMessages()
 	http.HandleFunc("/websocket", websocketHandler)
 	fs := http.FileServer(http.Dir("./static/"))
@@ -461,7 +464,7 @@ func BlindtestLandingPage(w http.ResponseWriter, r *http.Request) {
 	renderTemplate(w, "BlindTest/LandingPage.html", nil)
 }
 
-func Blindtest(w http.ResponseWriter, r *http.Request) {	
+func Blindtest(w http.ResponseWriter, r *http.Request) {
 	tracks := games.Api("6Xf0gjt1YmwvEG5iS8QOfg?si=2de553d01ff84abb")
 	tracks = games.RemovePlayedTracks(tracks)
 	currentTrack := games.NextTrack(tracks)
@@ -589,6 +592,45 @@ func BlindtestRules(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func Petitbac(w http.ResponseWriter, r *http.Request) {
-	renderTemplate(w, "PetitBac/index.html", nil)
+func PetitBacLandingPage(w http.ResponseWriter, r *http.Request) {
+	renderTemplate(w, "PetitBac/LandingPage.html", nil)
+}
+
+func PetitBac(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "POST" {
+		r.ParseForm()
+
+		artiste := r.Form.Get("artiste")
+		album := r.Form.Get("album")
+		groupe := r.Form.Get("groupe")
+		instrument := r.Form.Get("instrument")
+		featuring := r.Form.Get("featuring")
+
+		fmt.Println("Nouvelle entrée ajoutée :")
+		fmt.Println("Artiste:", artiste)
+		fmt.Println("Album:", album)
+		fmt.Println("Groupe de musique:", groupe)
+		fmt.Println("Instrument de musique:", instrument)
+		fmt.Println("Featuring:", featuring)
+	} else {
+		rand.Seed(time.Now().UnixNano())
+		letters := "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+		randomLetter := string(letters[rand.Intn(len(letters))])
+
+		data := games.Data{
+			RandomLetter: randomLetter,
+		}
+
+		tmpl, err := template.ParseFiles("html/PetitBac/index.html")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		err = tmpl.Execute(w, data)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
 }

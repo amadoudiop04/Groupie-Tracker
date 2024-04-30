@@ -1,0 +1,143 @@
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: rgb(39, 38, 38);
+}
+
+.title-top {
+    color: #FFFAFA;
+    display: flex;
+    justify-content: center;
+    font-family: "Jacquard 24", system-ui;
+    font-weight: 400;
+    font-style: normal;
+}
+
+.wrapper {
+    display: flex;
+    justify-content: center;
+    border: 1px solid transparent;
+    border-radius: 20px;
+    background: linear-gradient(to bottom right, #50ffd3, #6A5ACD);
+    box-shadow: rgba(0, 0, 0, 0.3) 0px 19px 38px, rgba(0, 0, 0, 0.22) 0px 15px 12px;
+    height: 50%;
+    width: 50%;
+    transform: translateX(50%);
+}
+
+
+.track-art {
+    margin: 2%;
+    justify-content: center;
+    height: 250px;
+    width: 250px;
+    border: 2px solid #FFFAFA;
+    background-size: cover;
+    background-position: center;
+    border-radius: 50%;
+    -moz-box-shadow: 0px 6px 5px black;
+    -webkit-box-shadow: 0px 6px 5px black;
+    box-shadow: 0px 6px 5px black;
+    -moz-border-radius: 190px;
+    -webkit-border-radius: 190px;
+    border-radius: 190px;
+    background: center / cover no-repeat url("https://img.lovepik.com/background/20211021/large/lovepik-business-brain-background-image_500355186.jpg");
+    animation: rotation 8s infinite linear;
+}
+
+.requestWords {
+    border-radius: 50px;
+    font-size: 3vh;
+}
+
+.wordsContainer {
+    color: black;
+    font-size: 2em;
+    font-weight: 300;
+    font-style: normal;
+}
+
+
+@keyframes rotation {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(359deg);
+    }
+}
+
+.mybtn {
+    margin: 5px;
+    background-color: cornflowerblue;
+    font-size: 1.5em;
+    border-radius: 10px;
+    transform: translateX(90%);
+}
+
+.container {
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.audioContainer{
+    align-content: center;
+    text-align: center;
+    background: linear-gradient(to bottom right,#50ffd3,#6A5ACD);
+    border-radius: 20px;
+    height: 450px;
+    width: 45%; 
+    margin-top: 100px;
+    margin-left: 410px;
+}
+
+.deco-Img{
+    background: center / cover no-repeat url("https://img.lovepik.com/background/20211021/large/lovepik-business-brain-background-image_500355186.jpg");
+    transform: translateX(110%);
+    border: solid 1px black;
+    height: 30%;
+    width: 30%;
+    border-radius: 50%;
+    -moz-box-shadow: 0px 6px 5px black;
+    -webkit-box-shadow: 0px 6px 5px black;
+    box-shadow: 0px 6px 5px black;
+    -moz-border-radius: 190px;
+    -webkit-border-radius: 190px;
+    margin: 10px;
+    margin-bottom: 40px;
+}
+
+.RoomsButtons{
+    margin: 7.7%;
+}
+  
+.RoomsButton {
+    width: 250px;
+    height: 50px;
+    margin-top: 20px;
+    margin-left: 5px;
+    margin-right: 5px;
+    font-size: 20px;
+    font-family: 'Times New Roman', Times, serif;
+    cursor: pointer;
+    background: linear-gradient(to left, #35bfc6, #97eaef);
+    color: rgb(0, 0, 0);
+    border: 0.5px black solid;
+    border-radius: 5px;
+}
+
+.RulesButton {
+    width: 150px;
+    height: 30px;
+    margin-left: 5px;
+    margin-right: 5px;
+    font-size: 15px;
+    font-family: 'Times New Roman', Times, serif;
+    cursor: pointer;
+    background: linear-gradient(to left, #35bfc6, #97eaef);
+    color: rgb(0, 0, 0);
+    border: 0.5px black solid;
+    border-radius: 5px;
+}
