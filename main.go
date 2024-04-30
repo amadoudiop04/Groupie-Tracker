@@ -14,13 +14,18 @@ type Data struct {
 }
 
 func main() {
-	http.HandleFunc("/", handleHome)
+	http.HandleFunc("/", Home)
+	http.HandleFunc("/PetitBac", PetitBac)
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static/"))))
 	log.Println("Serveur démarré sur :8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
-func handleHome(w http.ResponseWriter, r *http.Request) {
+func Home(w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, "/PetitBac", http.StatusSeeOther)
+}
+
+func PetitBac(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 		r.ParseForm()
 
@@ -45,7 +50,7 @@ func handleHome(w http.ResponseWriter, r *http.Request) {
 			RandomLetter: randomLetter,
 		}
 
-		tmpl, err := template.ParseFiles("index.html")
+		tmpl, err := template.ParseFiles("html/PetitBac/index.html")
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -53,7 +58,7 @@ func handleHome(w http.ResponseWriter, r *http.Request) {
 
 		err = tmpl.Execute(w, data)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)  
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 	}
