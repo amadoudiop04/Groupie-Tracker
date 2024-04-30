@@ -7,77 +7,17 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
-	"net/smtp"
+	"strconv"
 	"strings"
 	"time"
 
 	"groupieTracker/database"
 	"groupieTracker/games"
 
-	"github.com/gorilla/websocket"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/sendgrid/sendgrid-go"
+	"github.com/sendgrid/sendgrid-go/helpers/mail"
 )
-
-var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-	CheckOrigin: func(r *http.Request) bool {
-		return true
-	},
-}
-
-var clients = make(map[*websocket.Conn]bool)
-var broadcast = make(chan []byte)
-
-func handleMessages() {
-	for {
-		msg := <-broadcast
-		for client := range clients {
-			err := client.WriteMessage(websocket.TextMessage, msg)
-			log.Println(msg)
-			if err != nil {
-				log.Printf("Error to send Message: %v", err)
-				client.Close()
-				delete(clients, client)
-			}
-		}
-	}
-}
-
-func websocketHandler(w http.ResponseWriter, r *http.Request) {
-	conn, err := upgrader.Upgrade(w, r, nil)
-
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	defer conn.Close()
-
-	clients[conn] = true // Add customer to customer map
-	for {
-		// read message from client
-		_, message, err := conn.ReadMessage()
-
-		if err != nil {
-			log.Println(err)
-			delete(clients, conn)
-			break
-		}
-
-		broadcast <- message
-	}
-}
-
-func broadcastMessage(message []byte) {
-	for client := range clients {
-		err := client.WriteMessage(websocket.TextMessage, message)
-		if err != nil {
-			log.Printf("Erreur lors de l'envoi du message au client: %v", err)
-			client.Close()
-			delete(clients, client)
-		}
-	}
-}
 
 func main() {
 	db := database.InitTable("USER")
@@ -112,8 +52,6 @@ func main() {
 	http.HandleFunc("/GuessTheSongRules", GuessTheSongRules)
 	http.HandleFunc("/PetitBacLandingPage", PetitBacLandingPage)
 	http.HandleFunc("/PetitBac", PetitBac)
-	go handleMessages()
-	http.HandleFunc("/websocket", websocketHandler)
 	fs := http.FileServer(http.Dir("./static/"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
 
@@ -170,11 +108,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		http.SetCookie(w, &cookie)
 		http.Redirect(w, r, "/Home", http.StatusSeeOther)
 	} else {
-		data := struct {
-			ErrorMessage string
-		}{
-			ErrorMessage: "Connexion impossible : nom d'utilisateur ou mot de passe incorrect.",
-		}
+		data := struct{ ErrorMessage string }{ErrorMessage: "Connexion impossible : nom d'utilisateur ou mot de passe incorrect."}
 		renderTemplate(w, "Login/Login.html", data)
 	}
 }
@@ -199,32 +133,16 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !database.UniqueUsername(username) { //username already used
-		data := struct {
-			ErrorMessage string
-		}{
-			ErrorMessage: "Ce pseudo est déjà utilisé, veuillez choisir un autre pseudo.",
-		}
+		data := struct{ ErrorMessage string }{ErrorMessage: "Ce pseudo est déjà utilisé, veuillez choisir un autre pseudo."}
 		renderTemplate(w, "Login/Register.html", data)
 	} else if !database.UniqueEmail(email) { //email already used
-		data := struct {
-			ErrorMessage string
-		}{
-			ErrorMessage: "Cet email est déjà utilisé, veuillez choisir un autre email.",
-		}
+		data := struct{ ErrorMessage string }{ErrorMessage: "Cet email est déjà utilisé, veuillez choisir un autre email."}
 		renderTemplate(w, "Login/Register.html", data)
 	} else if !database.VerifyPassword(password) { //password doesn't follow CNIL recommendations
-		data := struct {
-			ErrorMessage string
-		}{
-			ErrorMessage: "Votre mot de passe doit contenir 12 caractères comprenant des majuscules, des minuscules, des chiffres et des caractères spéciaux.",
-		}
+		data := struct{ ErrorMessage string }{ErrorMessage: "Votre mot de passe doit contenir 12 caractères comprenant des majuscules, des minuscules, des chiffres et des caractères spéciaux."}
 		renderTemplate(w, "Login/Register.html", data)
 	} else if confirmPassword != password { //password and password confirmation don't match
-		data := struct {
-			ErrorMessage string
-		}{
-			ErrorMessage: "Le mot de passe et la confirmation du mot de passe ne correspondent pas.",
-		}
+		data := struct{ ErrorMessage string }{ErrorMessage: "Le mot de passe et la confirmation du mot de passe ne correspondent pas."}
 		renderTemplate(w, "Login/Register.html", data)
 	} else { //Account is valid, we can create it
 		err := database.RegisterUser(db, username, password, email)
@@ -280,42 +198,38 @@ func PasswordForgottenHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !userExists {
-		data := struct {
-			ErrorMessage string
-		}{
-			ErrorMessage: "Cet email n'est associé à aucun compte.",
-		}
+		data := struct{ ErrorMessage string }{ErrorMessage: "Cet email n'est associé à aucun compte."}
 		renderTemplate(w, "Login/PasswordForgotten.html", data)
 	} else {
-		// 			/!\ IT DOES'NT WORK FOR NOW /!\
-		// Sender data
-		from := "help.groupietracker@gmail.com"
-		password := "GTamyagoGT"
+		apiKey := "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"
+		sg := sendgrid.NewSendClient(apiKey)
 
-		// Receiver email address
-		to := []string{email}
-
-		// smtp server configuration
-		smtpHost := "smtp.gmail.com"
-		smtpPort := "587"
-
-		// Code
-		code := "5846"
-
-		// Message
-		message := []byte(code)
-
-		// Authentication
-		auth := smtp.PlainAuth("", from, password, smtpHost)
-
-		// Sending email
-		err := smtp.SendMail(smtpHost+":"+smtpPort, auth, from, to, message)
+		code := database.GenerateCode()
+		cookie, err := r.Cookie("session_id")
 		if err != nil {
-			fmt.Println(err)
+			http.Error(w, "Session cookie not found", http.StatusUnauthorized)
 			return
 		}
-		fmt.Println("Email Sent Successfully!")
-		http.Redirect(w, r, "/AccountRecovery", http.StatusSeeOther)
+		userID := cookie.Value
+		_, err = db.Exec("UPDATE USER SET recoveryCode = ? WHERE id = ?", code, userID)
+		if err != nil {
+			log.Print(err)
+		}
+
+		from := mail.NewEmail("Groupie Tracker", "help.groupietracker@gmail.com")
+		subject := "Retrouvez votre compte"
+		to := mail.NewEmail("Client", email)
+		content := mail.NewContent("text/plain", "Bonjour, \n voici le code qui vous permettra de réinitialiser votre mot de passe : "+strconv.Itoa(code)+"\n À bientôt sur Groupie Tracker !")
+		message := mail.NewV3MailInit(from, subject, to, content)
+
+		response, err := sg.Send(message)
+		if err != nil {
+			log.Println("Erreur lors de l'envoi de l'e-mail:", err)
+		} else {
+			log.Println("Code de statut de l'envoi de l'e-mail:", response.StatusCode)
+			log.Println("Réponse de l'API SendGrid:", response.Body)
+			http.Redirect(w, r, "/AccountRecovery", http.StatusSeeOther)
+		}
 	}
 }
 
@@ -324,7 +238,26 @@ func AccountRecoveryPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func AccountRecoveryHandler(w http.ResponseWriter, r *http.Request) {
-	http.Redirect(w, r, "/ResetPassword", http.StatusSeeOther)
+	db := database.InitTable("USER")
+	defer db.Close()
+
+	recoveryCode := r.FormValue("recoveryCode")
+	cookie, err := r.Cookie("session_id")
+	if err != nil {
+		http.Error(w, "Session cookie not found", http.StatusUnauthorized)
+		return
+	}
+	userID := cookie.Value
+	var userCode int
+	_ = db.QueryRow("SELECT recoveryCode FROM USER WHERE id = ?", userID).Scan(&userCode)
+
+	if recoveryCode == strconv.Itoa(userCode) {
+		_, _ = db.Exec("UPDATE USER SET recoveryCode = NULL WHERE id = ?", userID)
+		http.Redirect(w, r, "/ResetPassword", http.StatusSeeOther)
+	} else {
+		data := struct{ ErrorMessage string }{ErrorMessage: "Code incorrect."}
+		renderTemplate(w, "Login/AccountRecovery.html", data)
+	}
 }
 
 func ResetPasswordPage(w http.ResponseWriter, r *http.Request) {
@@ -339,27 +272,25 @@ func ResetPasswordHandler(w http.ResponseWriter, r *http.Request) {
 	confirmPassword := r.FormValue("confirmPassword")
 
 	if password != confirmPassword {
-		data := struct {
-			ErrorMessage string
-		}{
-			ErrorMessage: "Le mot de passe et la confirmation du mot de passe ne correspondent pas.",
-		}
-		renderTemplate(w, "ResetPassword.html", data)
+		data := struct{ ErrorMessage string }{ErrorMessage: "Le mot de passe et la confirmation du mot de passe ne correspondent pas."}
+		renderTemplate(w, "Login/ResetPassword.html", data)
 	} else if !database.VerifyPassword(password) {
-		data := struct {
-			ErrorMessage string
-		}{
-			ErrorMessage: "Votre mot de passe doit contenir 12 caractères comprenant des majuscules, des minuscules, des chiffres et des caractères spéciaux.",
-		}
-		renderTemplate(w, "ResetPassword.html", data)
+		data := struct{ ErrorMessage string }{ErrorMessage: "Votre mot de passe doit contenir 12 caractères comprenant des majuscules, des minuscules, des chiffres et des caractères spéciaux."}
+		renderTemplate(w, "Login/ResetPassword.html", data)
 	} else {
-		//updateQuery := "UPDATE USER SET password = ? WHERE email = ?"     // --> find a way to change the wright user (have to register the email)
-		//_, err := db.Exec(updateQuery, password, email)
-		//if err != nil {
-		//	log.Print(err)
-		//	http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		//	return
-		//}
+		cookie, err := r.Cookie("session_id")
+		if err != nil {
+			http.Error(w, "Session cookie not found", http.StatusUnauthorized)
+			return
+		}
+		userID := cookie.Value
+		_, err = db.Exec("UPDATE USER SET password = ? WHERE id = ?", database.HashPassword(password), userID)
+		fmt.Println("Password set : " + password)
+		if err != nil {
+			log.Print(err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
 		http.Redirect(w, r, "/Home", http.StatusSeeOther)
 	}
 }

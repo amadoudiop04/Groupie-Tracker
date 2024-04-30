@@ -76,7 +76,7 @@ func GetUserData(ID string) (User, error) {
 
 	var user User
 	err := db.QueryRow("SELECT id, pseudo, email, password FROM USER WHERE id = ?", ID).
-		Scan(&user.Id, &user.Pseudo, &user.Email, &user.Password)
+		Scan(&user.Id, &user.Pseudo, &user.Email, &user.Password, &user.recoveryCode)
 	if err != nil {
 		log.Println("Erreur lors de la récupération des données de l'utilisateur:", err)
 		return User{}, err
