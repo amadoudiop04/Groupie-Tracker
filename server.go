@@ -5,79 +5,75 @@ import (
 	"fmt"
 	"html/template"
 	"log"
-	"math/rand"
 	"net/http"
 	"net/smtp"
 	"strings"
-	"time"
-
+	"sync"
 	"groupieTracker/database"
 	"groupieTracker/games"
-
 	"github.com/gorilla/websocket"
 	_ "github.com/mattn/go-sqlite3"
 )
-
 var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
 	CheckOrigin: func(r *http.Request) bool {
 		return true
 	},
 }
 
-var clients = make(map[*websocket.Conn]bool)
-var broadcast = make(chan []byte)
-
-func handleMessages() {
-	for {
-		msg := <-broadcast
-		for client := range clients {
-			err := client.WriteMessage(websocket.TextMessage, msg)
-			log.Println(msg)
-			if err != nil {
-				log.Printf("Error to send Message: %v", err)
-				client.Close()
-				delete(clients, client)
-			}
-		}
-	}
+type Message struct {
+	Username string `json:"username"`
+	Message  string `json:"message"`
 }
+
+var clients = make(map[*websocket.Conn]bool)
+var broadcast = make(chan Message)
+var mutex = sync.Mutex{} // Add mutex to handle concurrent map access
 
 func websocketHandler(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
-
 	if err != nil {
-		log.Println(err)
+		fmt.Println(err)
 		return
 	}
 	defer conn.Close()
 
-	clients[conn] = true // Add customer to customer map
+	mutex.Lock()
+	clients[conn] = true
+	mutex.Unlock()
+
 	for {
-		// read message from client
-		_, message, err := conn.ReadMessage()
-
+		var msg Message
+		err := conn.ReadJSON(&msg)
 		if err != nil {
-			log.Println(err)
+			fmt.Println(err)
+			mutex.Lock()
 			delete(clients, conn)
-			break
+			mutex.Unlock()
+			return
 		}
 
-		broadcast <- message
+		broadcast <- msg
 	}
 }
 
-func broadcastMessage(message []byte) {
-	for client := range clients {
-		err := client.WriteMessage(websocket.TextMessage, message)
-		if err != nil {
-			log.Printf("Erreur lors de l'envoi du message au client: %v", err)
-			client.Close()
-			delete(clients, client)
+func handleMessages() {
+	for {
+		msg := <-broadcast
+		log.Println(msg)
+		mutex.Lock()
+		for client := range clients {
+			err := client.WriteJSON(msg)
+			if err != nil {
+				fmt.Println(err)
+				client.Close()
+				delete(clients, client)
+			}
 		}
+		mutex.Unlock()
+		log.Println(msg)
 	}
 }
+
 
 func main() {
 	db := database.InitTable("USER")
@@ -110,8 +106,7 @@ func main() {
 	http.HandleFunc("/GuessTheSongLose", GuessTheSongLose)
 	http.HandleFunc("/GuessTheSongWin", GuessTheSongWin)
 	http.HandleFunc("/GuessTheSongRules", GuessTheSongRules)
-	http.HandleFunc("/PetitBacLandingPage", PetitBacLandingPage)
-	http.HandleFunc("/PetitBac", PetitBac)
+	http.HandleFunc("/Petitbac", Petitbac)
 	go handleMessages()
 	http.HandleFunc("/websocket", websocketHandler)
 	fs := http.FileServer(http.Dir("./static/"))
@@ -464,7 +459,7 @@ func BlindtestLandingPage(w http.ResponseWriter, r *http.Request) {
 	renderTemplate(w, "BlindTest/LandingPage.html", nil)
 }
 
-func Blindtest(w http.ResponseWriter, r *http.Request) {
+func Blindtest(w http.ResponseWriter, r *http.Request) {	
 	tracks := games.Api("6Xf0gjt1YmwvEG5iS8QOfg?si=2de553d01ff84abb")
 	tracks = games.RemovePlayedTracks(tracks)
 	currentTrack := games.NextTrack(tracks)
@@ -592,45 +587,6 @@ func BlindtestRules(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func PetitBacLandingPage(w http.ResponseWriter, r *http.Request) {
-	renderTemplate(w, "PetitBac/LandingPage.html", nil)
-}
-
-func PetitBac(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "POST" {
-		r.ParseForm()
-
-		artiste := r.Form.Get("artiste")
-		album := r.Form.Get("album")
-		groupe := r.Form.Get("groupe")
-		instrument := r.Form.Get("instrument")
-		featuring := r.Form.Get("featuring")
-
-		fmt.Println("Nouvelle entrée ajoutée :")
-		fmt.Println("Artiste:", artiste)
-		fmt.Println("Album:", album)
-		fmt.Println("Groupe de musique:", groupe)
-		fmt.Println("Instrument de musique:", instrument)
-		fmt.Println("Featuring:", featuring)
-	} else {
-		rand.Seed(time.Now().UnixNano())
-		letters := "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-		randomLetter := string(letters[rand.Intn(len(letters))])
-
-		data := games.Data{
-			RandomLetter: randomLetter,
-		}
-
-		tmpl, err := template.ParseFiles("html/PetitBac/index.html")
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		err = tmpl.Execute(w, data)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	}
+func Petitbac(w http.ResponseWriter, r *http.Request) {
+	renderTemplate(w, "PetitBac/index.html", nil)
 }
