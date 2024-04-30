@@ -5,12 +5,15 @@ import (
 	"fmt"
 	"html/template"
 	"log"
+	"math/rand"
 	"net/http"
 	"net/smtp"
 	"strings"
+	"time"
 	"sync"
 	"groupieTracker/database"
 	"groupieTracker/games"
+
 	"github.com/gorilla/websocket"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -18,6 +21,10 @@ var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
 		return true
 	},
+}
+
+type Data struct {
+RandomLetter string
 }
 
 type Message struct {
@@ -106,7 +113,8 @@ func main() {
 	http.HandleFunc("/GuessTheSongLose", GuessTheSongLose)
 	http.HandleFunc("/GuessTheSongWin", GuessTheSongWin)
 	http.HandleFunc("/GuessTheSongRules", GuessTheSongRules)
-	http.HandleFunc("/Petitbac", Petitbac)
+	http.HandleFunc("/PetitBacLandingPage", PetitBacLandingPage)
+	http.HandleFunc("/PetitBac", PetitBac)
 	go handleMessages()
 	http.HandleFunc("/websocket", websocketHandler)
 	fs := http.FileServer(http.Dir("./static/"))
@@ -459,7 +467,7 @@ func BlindtestLandingPage(w http.ResponseWriter, r *http.Request) {
 	renderTemplate(w, "BlindTest/LandingPage.html", nil)
 }
 
-func Blindtest(w http.ResponseWriter, r *http.Request) {	
+func Blindtest(w http.ResponseWriter, r *http.Request) {
 	tracks := games.Api("6Xf0gjt1YmwvEG5iS8QOfg?si=2de553d01ff84abb")
 	tracks = games.RemovePlayedTracks(tracks)
 	currentTrack := games.NextTrack(tracks)
@@ -587,6 +595,45 @@ func BlindtestRules(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func Petitbac(w http.ResponseWriter, r *http.Request) {
-	renderTemplate(w, "PetitBac/index.html", nil)
+func PetitBacLandingPage(w http.ResponseWriter, r *http.Request) {
+	renderTemplate(w, "PetitBac/LandingPage.html", nil)
+}
+
+func PetitBac(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "POST" {
+		r.ParseForm()
+
+		artiste := r.Form.Get("artiste")
+		album := r.Form.Get("album")
+		groupe := r.Form.Get("groupe")
+		instrument := r.Form.Get("instrument")
+		featuring := r.Form.Get("featuring")
+
+		fmt.Println("Nouvelle entrée ajoutée :")
+		fmt.Println("Artiste:", artiste)
+		fmt.Println("Album:", album)
+		fmt.Println("Groupe de musique:", groupe)
+		fmt.Println("Instrument de musique:", instrument)
+		fmt.Println("Featuring:", featuring)
+	} else {
+		rand.Seed(time.Now().UnixNano())
+		letters := "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+		randomLetter := string(letters[rand.Intn(len(letters))])
+
+		data := Data{
+			RandomLetter: randomLetter,
+		}
+
+		tmpl, err := template.ParseFiles("html/PetitBac/index.html")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		err = tmpl.Execute(w, data)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
 }
