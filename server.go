@@ -116,6 +116,7 @@ func main() {
 	http.HandleFunc("/PetitBacLandingPage", PetitBacLandingPage)
 	http.HandleFunc("/PetitBac", PetitBac)
 	http.HandleFunc("/PetitBacHandler", PetitBacHandler)
+	http.HandleFunc("/PetitBacRules", PetitBacRules)
 	go handleMessages()
 	http.HandleFunc("/websocket", websocketHandler)
 	fs := http.FileServer(http.Dir("./static/"))
@@ -642,4 +643,8 @@ func PetitBac(w http.ResponseWriter, r *http.Request) {
 
 func PetitBacHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/PetitBac", http.StatusSeeOther)
+}
+
+func PetitBacRules(w http.ResponseWriter, r *http.Request) {
+	renderTemplate(w, "PetitBac/Rules.html", nil)
 }
