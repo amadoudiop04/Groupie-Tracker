@@ -23,8 +23,13 @@
 
     <div class="player">
         <div class="lyrics">
-            <div class="divParoles">
-                {{.LyricsSong}}
+            <div class="divParoles" id="parolesContainer">
+                <p id="lyrics" style="display: none;">{{.LyricsSong}}</p>
+                <p class="lines" id="line1" style="opacity: 0;"></p>
+                <p class="lines" id="line2" style="opacity: 0;"></p>
+                <p class="lines" id="line3" style="opacity: 0;"></p>
+                <p class="lines" id="line4" style="opacity: 0;"></p>
+                <p class="lines" id="line5" style="opacity: 0;"></p>
             </div>
         </div>
         <div class="wrapper">
@@ -48,7 +53,7 @@
                 <span class="wave"></span>
             </div>
 
-            <p id="timeRemaining">Il reste 20 secondes pour répondre</p>
+            <p id="timeRemaining">Il reste 25 secondes pour répondre</p>
 
             <form action="/" method="post">
                 <div class="inputResquest">
@@ -60,6 +65,17 @@
     </div>
    
     <script src="/static/js/guessTheSongTimer.js"></script>
+    <noscript>
+        <style>
+            .lines {
+                display: none;
+            }
+
+            #lyrics {
+                display: contents
+            }
+        </style>
+    </noscript>
 </body>
 
 </html>

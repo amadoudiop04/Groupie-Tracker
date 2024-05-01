@@ -1,10 +1,10 @@
-let timer = 19;
+let timer = 24;
 let intervalId;
 
 intervalId = setInterval(() => setTimer(), 1000);
 setTimeout(() => {
     clearInterval(intervalId);
-}, 20000);
+}, 25000);
 
 function setTimer() {
     if (timer < 0) {
@@ -14,3 +14,22 @@ function setTimer() {
     counter.innerText = "Il reste " + timer + " secondes pour répondre";
     timer--;
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    const lyricsElement = document.getElementById('lyrics');
+    const lines = lyricsElement.innerText.split('\n');
+    let currentLineIndex = 0;
+
+    function loadNextLine() {
+        if (currentLineIndex < lines.length) {
+            const lineElement = document.getElementById('line' + (currentLineIndex + 1));
+            lineElement.innerText = lines[currentLineIndex];
+            lineElement.classList.add('fade-in');
+            document.getElementById('line' + (currentLineIndex + 1)).innerText = lines[currentLineIndex];
+            currentLineIndex++;
+        }
+    }
+    loadNextLine();
+
+    const timer = setInterval(loadNextLine, 5000); 
+});

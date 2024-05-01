@@ -2,13 +2,13 @@ package games
 
 import (
 	"context"
-	"crypto/rand"
 	"encoding/binary"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"log"
+	"math/rand"
 	"net/http"
 	"strings"
 	"unicode"
@@ -54,9 +54,6 @@ func ApiTrack() *spotify.FullTrack {
 	log.Println("playlist id:", playlist.ID)
 	log.Println("playlist name:", playlist.Name)
 	log.Println("playlist description:", playlist.Description)
-
-	//log.Println(" le fameu playlist", playlist)
-	//log.Println(" le fameu playlist", MyPlaylist)
 
 	for {
 		Max := len(playlist.Tracks.Tracks)
@@ -160,7 +157,7 @@ func NextTracks() {
 
 	CurrentSong.Singer = artist
 	CurrentSong.TitleSong = title
-	CurrentSong.LyricsSong = lyrics
+	CurrentSong.LyricsSong = truncLyrics(lyrics)
 	CurrentSong.Timer = 30
 }
 
@@ -230,16 +227,13 @@ func LoadData() {
 
 	CurrentSong.Singer = artist
 	CurrentSong.TitleSong = title
-	CurrentSong.LyricsSong = lyrics
+	CurrentSong.LyricsSong = truncLyrics(lyrics)
 	CurrentSong.ImageURL = data.imageUrl
 
 	fmt.Println("artist", artist)
 	fmt.Println("Title", title)
 	fmt.Println("lyrics :", lyrics)
 	fmt.Println("imageUrl:", data.imageUrl)
-	// fmt.Println("artist" , currentSong.Singer)
-	// fmt.Println("Title", currentSong.TitleSong)
-	// fmt.Println("lyrics :", currentSong.LyricsSong)
 }
 
 func ResetData() {
@@ -265,4 +259,27 @@ func CompareStrings(input1, input2 string) bool {
 	input2 = RemoveAccents(strings.ToLower(input2))
 
 	return input1 == input2
+}
+
+func truncLyrics(lyrics string) string {
+	lines := strings.Split(lyrics, "\n")
+
+	skipLineBetweenBrackets := func(line string) bool {
+		return strings.Contains(line, "[") && strings.Contains(line, "]")
+	}
+
+	filteredLines := make([]string, 0)
+	for _, line := range lines[3:] {
+		if !skipLineBetweenBrackets(line) && line != "" {
+			filteredLines = append(filteredLines, line)
+		}
+	}
+
+	randomLineIndex := rand.Intn(len(filteredLines) - 6)
+	truncatedLyrics := strings.Join(filteredLines[randomLineIndex:randomLineIndex+5], "\n")
+	fmt.Println("-------")
+	fmt.Println(truncatedLyrics)
+	fmt.Println("-------")
+
+	return truncatedLyrics
 }

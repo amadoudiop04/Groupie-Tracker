@@ -499,26 +499,9 @@ func GuessTheSongLandingPage(w http.ResponseWriter, r *http.Request) {
 
 func GuessTheSong(w http.ResponseWriter, r *http.Request) {
 	games.LoadData()
-	w.Header().Set("Refresh", "20")
+	w.Header().Set("Refresh", "25")
 	html := template.Must(template.ParseFiles("html/GuessTheSong/index.html"))
 	if r.Method == "POST" {
-
-		action := r.FormValue("action")
-		if action == "next" {
-			fmt.Println(" Next")
-			games.NextTracks()
-		}
-		if action == "previous" {
-			fmt.Println(" previous")
-			games.CurrentSong.CheatMess = "Please don't cheat ❌"
-			// Code pour previous
-		}
-		if action == "playPause" {
-			fmt.Println("play")
-			games.CurrentSong.CheatMess = "Please don't cheat❌"
-			// Code pour Play
-		}
-
 		input := r.FormValue("value")
 		if games.CompareStrings(input, games.CurrentSong.TitleSong) {
 			games.CurrentSong.Scores += 10
