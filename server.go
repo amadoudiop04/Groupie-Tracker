@@ -3,20 +3,21 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"groupieTracker/database"
+	"groupieTracker/games"
 	"html/template"
 	"log"
 	"math/rand"
 	"net/http"
 	"net/smtp"
 	"strings"
-	"time"
 	"sync"
-	"groupieTracker/database"
-	"groupieTracker/games"
+	"time"
 
 	"github.com/gorilla/websocket"
 	_ "github.com/mattn/go-sqlite3"
 )
+
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
 		return true
@@ -24,7 +25,7 @@ var upgrader = websocket.Upgrader{
 }
 
 type Data struct {
-RandomLetter string
+	RandomLetter string
 }
 
 type Message struct {
@@ -81,7 +82,6 @@ func handleMessages() {
 	}
 }
 
-
 func main() {
 	db := database.InitTable("USER")
 	defer db.Close()
@@ -115,6 +115,7 @@ func main() {
 	http.HandleFunc("/GuessTheSongRules", GuessTheSongRules)
 	http.HandleFunc("/PetitBacLandingPage", PetitBacLandingPage)
 	http.HandleFunc("/PetitBac", PetitBac)
+	http.HandleFunc("/PetitBacHandler", PetitBacHandler)
 	go handleMessages()
 	http.HandleFunc("/websocket", websocketHandler)
 	fs := http.FileServer(http.Dir("./static/"))
@@ -600,6 +601,7 @@ func PetitBacLandingPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func PetitBac(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Refresh", "31")
 	if r.Method == "POST" {
 		r.ParseForm()
 
@@ -636,4 +638,8 @@ func PetitBac(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+}
+
+func PetitBacHandler(w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, "/PetitBac", http.StatusSeeOther)
 }
