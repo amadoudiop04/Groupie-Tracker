@@ -6,8 +6,10 @@ import (
 	"encoding/hex"
 	"fmt"
 	"log"
+	"math/rand"
 	"regexp"
 	"strings"
+	"time"
 )
 
 func HashPassword(password string) string {
@@ -105,7 +107,7 @@ func AuthenticateUser(username, password string) (bool, error) {
 func DisplayUserTable(rows *sql.Rows) {
 	for rows.Next() {
 		var users User
-		err := rows.Scan(&users.Id, &users.Pseudo, &users.Email, &users.Password)
+		err := rows.Scan(&users.Id, &users.Pseudo, &users.Email, &users.Password, &users.recoveryCode)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -132,11 +134,17 @@ func ReplaceEmptyString(value, defaultValue string) string {
 	return value
 }
 
+func GenerateCode() int {
+	rand.Seed(time.Now().UnixNano())
+	return rand.Intn(900000) + 100000
+}
+
 //structures
 
 type User struct {
-	Id       int
-	Pseudo   string
-	Email    string
-	Password string
+	Id           int
+	Pseudo       string
+	Email        string
+	Password     string
+	recoveryCode *int
 }
