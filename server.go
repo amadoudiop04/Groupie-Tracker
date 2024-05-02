@@ -28,11 +28,12 @@ var upgrader = websocket.Upgrader{
 
 type Data struct {
 	RandomLetter string
+	Message      Message
 }
 
 type Message struct {
-	Username string `json:"username"`
-	Message  string `json:"message"`
+	Username string
+	Text string
 }
 
 var clients = make(map[*websocket.Conn]bool)
@@ -611,12 +612,20 @@ func PetitBac(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Instrument de musique:", instrument)
 		fmt.Println("Featuring:", featuring)
 	} else {
+		message := r.FormValue("Message")
 		rand.Seed(time.Now().UnixNano())
 		letters := "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 		randomLetter := string(letters[rand.Intn(len(letters))])
 
+		if r.FormValue("Message") == "value1" {
+		}
 		data := Data{
 			RandomLetter: randomLetter,
+			
+				Message: Message{
+					Username: "Admin00",
+					Text: message,
+				},
 		}
 
 		tmpl, err := template.ParseFiles("html/PetitBac/index.html")

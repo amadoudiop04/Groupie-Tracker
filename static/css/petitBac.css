@@ -199,3 +199,11 @@ body {
     white-space: pre-line;
 }
   
+.mybtnMessage{
+    background-color: green;
+    border-radius: 10px;
+}
+
+.myInput{
+    border-radius: 10px;
+}

@@ -17,6 +17,11 @@
     <div class="lyrics">
         <div class="divParoles">
            chat message🖊
+           {{.Message.Username}}
+           <form action="/PetitBacHandler" method="post">
+            <input class="myInput" name="Message"  placeholder="ecrivez votre message" type="text"> <button name="action" value="Chat" class="mybtnMessage">Envoyer</button>
+           </form>
+           {{.Message.Text}}
         </div>
     </div>
 
