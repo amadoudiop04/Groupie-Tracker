@@ -50,17 +50,6 @@ body {
     font-size: 3vh;
 }
 
-.inputForm {
-    margin-left: 325px;
-    margin-top: -245px;
-    margin-right: -30px;
-}
-
-.inputForm button{
-    margin-left: -150px;
-    margin-top: 10px;
-}
-
 .LetterContainer {
     color: black;
     font-size: 2em;

@@ -13,12 +13,14 @@ import (
 	"strings"
 	"sync"
 	"time"
-
+	"encoding/json"
 	"github.com/gorilla/websocket"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/sendgrid/sendgrid-go"
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
 )
+
+var Pseudo string
 
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
@@ -28,12 +30,12 @@ var upgrader = websocket.Upgrader{
 
 type Data struct {
 	RandomLetter string
-	Message      Message
+	Info         []Message
 }
 
 type Message struct {
-	Username string
-	Text string
+	Username    string
+	TextMessage string
 }
 
 var clients = make(map[*websocket.Conn]bool)
@@ -151,7 +153,7 @@ func LoginPage(w http.ResponseWriter, r *http.Request) {
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	username := r.FormValue("username")
 	password := r.FormValue("password")
-
+	Pseudo = username
 	canConnect, err := database.AuthenticateUser(username, password)
 	if err != nil {
 		log.Print(err)
@@ -594,53 +596,89 @@ func PetitBacLandingPage(w http.ResponseWriter, r *http.Request) {
 	renderTemplate(w, "PetitBac/LandingPage.html", nil)
 }
 
+var messages []Message
+
 func PetitBac(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Refresh", "31")
-	if r.Method == "POST" {
-		r.ParseForm()
+    w.Header().Set("Refresh", "31")
+    var ChatDiscours string
+    if r.Method == "POST" {
+        action := r.FormValue("action")
+        if action == "true" {
+            r.ParseForm()
+            artiste := r.Form.Get("artiste")
+            album := r.Form.Get("album")
+            groupe := r.Form.Get("groupe")
+            instrument := r.Form.Get("instrument")
+            featuring := r.Form.Get("featuring")
 
-		artiste := r.Form.Get("artiste")
-		album := r.Form.Get("album")
-		groupe := r.Form.Get("groupe")
-		instrument := r.Form.Get("instrument")
-		featuring := r.Form.Get("featuring")
+            fmt.Println("Nouvelle entrée ajoutée :")
+            fmt.Println("Artiste:", artiste)
+            fmt.Println("Album:", album)
+            fmt.Println("Groupe de musique:", groupe)
+            fmt.Println("Instrument de musique:", instrument)
+            fmt.Println("Featuring:", featuring)
+        }
+		
+        if action == "ChatMessage" {
+            log.Println("put your message")
+            message := r.Form.Get("Message")
+            ChatDiscours = message
+            messages = append(messages, Message{
+                Username:    Pseudo,
+                TextMessage: ChatDiscours,
+            })
 
-		fmt.Println("Nouvelle entrée ajoutée :")
-		fmt.Println("Artiste:", artiste)
-		fmt.Println("Album:", album)
-		fmt.Println("Groupe de musique:", groupe)
-		fmt.Println("Instrument de musique:", instrument)
-		fmt.Println("Featuring:", featuring)
-	} else {
-		message := r.FormValue("Message")
-		rand.Seed(time.Now().UnixNano())
-		letters := "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-		randomLetter := string(letters[rand.Intn(len(letters))])
-
-		if r.FormValue("Message") == "value1" {
+            jsonMessage, err := json.Marshal(messages[len(messages)-1])
+            if err != nil {
+                fmt.Println("Error marshaling message to JSON:", err)
+                http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+                return
+            }
+            
+          
+            broadcast <- Message{
+                Username:    Pseudo,
+                TextMessage: string(jsonMessage),
+            }
+        }
+		if action == "DeleteMessage" {
+			indexStr := r.Form.Get("messageIndex")
+			index, err := strconv.Atoi(indexStr)
+			if err != nil {
+				http.Error(w, "Invalid message index", http.StatusBadRequest)
+				return
+			}
+			if index < 0 || index >= len(messages) {
+				http.Error(w, "Invalid message index", http.StatusBadRequest)
+				return
+			}
+			messages = append(messages[:index], messages[index+1:]...)
 		}
-		data := Data{
-			RandomLetter: randomLetter,
-			
-				Message: Message{
-					Username: "Admin00",
-					Text: message,
-				},
-		}
 
-		tmpl, err := template.ParseFiles("html/PetitBac/index.html")
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+    }
 
-		err = tmpl.Execute(w, data)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	}
+    rand.Seed(time.Now().UnixNano())
+    letters := "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    randomLetter := string(letters[rand.Intn(len(letters))])
+
+    data := Data{
+        RandomLetter: randomLetter,
+        Info:         messages,
+    }
+
+    tmpl, err := template.ParseFiles("html/PetitBac/index.html")
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+
+    err = tmpl.Execute(w, data)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
 }
+
 
 func PetitBacHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/PetitBac", http.StatusSeeOther)

@@ -13,15 +13,18 @@
 
 <body>
     <h1 class="title-top">Petit Bac</h1>
-
+    <form action="/PetitBac" method="post">
     <div class="lyrics">
         <div class="divParoles">
-           chat message🖊
-           {{.Message.Username}}
-           <form action="/PetitBacHandler" method="post">
-            <input class="myInput" name="Message"  placeholder="ecrivez votre message" type="text"> <button name="action" value="Chat" class="mybtnMessage">Envoyer</button>
-           </form>
-           {{.Message.Text}}
+         Chat message🖊
+         {{range $index, $message := .Info}}
+    {{$message.Username}}: {{$message.TextMessage}}<button type="submit">🗑</button>
+        <input type="hidden" name="action" value="DeleteMessage">
+        <input type="hidden" name="messageIndex" value="{{$index}}">
+      
+    {{end}}
+    <input class="myInput" name="Message" id="Message" placeholder="écrivez votre message" type="text"> 
+    <button name="action" value="ChatMessage" class="mybtnMessage">Envoyer</button>
         </div>
     </div>
 
@@ -36,33 +39,38 @@
             </div>
             <p id="timeRemaining">Il reste 30 secondes</p>
 
-            <form class="inputForm" action="/PetitBacHandler" method="post">
+        
                 <div class="wordsContainer">Artiste</div>
                 <div class="inputResquest">
-                    <input class="requestWords" type="text" id="artiste" placeholder={{.RandomLetter}}... name="artiste" autocomplete="off">
+                    <input class="requestWords" type="text" id="artiste" placeholder={{.RandomLetter}}... name="artiste"
+                        autocomplete="off">
                 </div>
-                
+
                 <div class="wordsContainer">Album</div>
                 <div class="inputResquest">
-                    <input class="requestWords" type="text" id="album" placeholder={{.RandomLetter}}... name="album" autocomplete="off">
+                    <input class="requestWords" type="text" id="album" placeholder={{.RandomLetter}}... name="album"
+                        autocomplete="off">
                 </div>
-                
+
                 <div class="wordsContainer">Groupe de musique</div>
                 <div class="inputResquest">
-                    <input class="requestWords" type="text" id="groupe" placeholder={{.RandomLetter}}... name="groupe" autocomplete="off">
-                </div> 
-                
+                    <input class="requestWords" type="text" id="groupe" placeholder={{.RandomLetter}}... name="groupe"
+                        autocomplete="off">
+                </div>
+
                 <div class="wordsContainer">Instrument de musique</div>
                 <div class="inputResquest">
-                    <input class="requestWords" type="text" id="instrument" placeholder={{.RandomLetter}}... name="instrument" autocomplete="off">
+                    <input class="requestWords" type="text" id="instrument" placeholder={{.RandomLetter}}...
+                        name="instrument" autocomplete="off">
                 </div>
-                
+
                 <div class="wordsContainer">Featuring</div>
                 <div class="inputResquest">
-                    <input class="requestWords" type="text" id="featuring" placeholder={{.RandomLetter}}... name="featuring" autocomplete="off">
+                    <input class="requestWords" type="text" id="featuring" placeholder={{.RandomLetter}}...
+                        name="featuring" autocomplete="off">
                 </div>
-                
-                <button type="submit" class="mybtn">Valider</button>
+
+                <button name="action" value="true" type="submit" class="mybtn">Valider</button>
             </form>
         </div>
     </div>
