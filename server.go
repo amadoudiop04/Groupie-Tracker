@@ -18,6 +18,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/sendgrid/sendgrid-go"
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
+	"github.com/zmb3/spotify"
 )
 
 var upgrader = websocket.Upgrader{
@@ -33,7 +34,7 @@ type Data struct {
 
 type Message struct {
 	Username string
-	Text string
+	Text     string
 }
 
 var clients = make(map[*websocket.Conn]bool)
@@ -89,7 +90,7 @@ func main() {
 	db := database.InitTable("USER")
 	defer db.Close()
 
-	//db.Exec("DELETE FROM USER WHERE id > 1;") //--> Remove users with id > 1  /!\ TO REMOVE BEFORE DEPLOYMENT /!\
+	db.Exec("DELETE FROM USER WHERE id > 1;") //--> Remove users with id > 1  /!\ TO REMOVE BEFORE DEPLOYMENT /!\
 
 	rowsUsers := database.SelectAllFromTable(db, "USER")
 	database.DisplayUserTable(rowsUsers) //--> Show the table USER in terminal
@@ -108,7 +109,10 @@ func main() {
 	http.HandleFunc("/UserProfile", UserProfile)
 	http.HandleFunc("/UserProfileHandler", UserProfileHandler)
 	http.HandleFunc("/BlindtestLandingPage", BlindtestLandingPage)
-	http.HandleFunc("/Blindtest", Blindtest)
+	http.HandleFunc("/PublicBlindtest", Blindtest)
+	http.HandleFunc("/CreatePrivateBlindtest", CreateBlindtest)
+	http.HandleFunc("/CreateBlindtestHandler", CreateBlindtestHandler)
+	http.HandleFunc("/JoinPrivateBlindtest", JoinBlindtest)
 	http.HandleFunc("/EndBlindtest", EndBlindtest)
 	http.HandleFunc("/BlindtestRules", BlindtestRules)
 	http.HandleFunc("/GuessTheSongLandingPage", GuessTheSongLandingPage)
@@ -499,6 +503,45 @@ func Blindtest(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func CreateBlindtest(w http.ResponseWriter, r *http.Request) {
+	renderTemplate(w, "BlindTest/CreatePrivateRoom.html", nil)
+}
+
+func CreateBlindtestHandler(w http.ResponseWriter, r *http.Request) {
+	gameTurns := r.FormValue("gameTurns")
+	musicDuration := r.FormValue("musicDuration")
+	answerDuration := r.FormValue("answerDuration")
+	tracks := games.Api("6Xf0gjt1YmwvEG5iS8QOfg?si=2de553d01ff84abb")
+	tracks = games.RemovePlayedTracks(tracks)
+	currentTrack := games.NextTrack(tracks)
+	if gameTurns == "" {
+		gameTurns = "5"
+	}
+	if musicDuration == "" {
+		musicDuration = "10"
+	}
+	if answerDuration == "" {
+		answerDuration = "5"
+	}
+
+	data := struct {
+		NbGameTurns      string
+		DurationOfMusic  string
+		DurationOfAnswer string
+		Track            *spotify.SimpleTrack
+	}{
+		NbGameTurns:      gameTurns,
+		DurationOfMusic:  musicDuration,
+		DurationOfAnswer: answerDuration,
+		Track:            currentTrack,
+	}
+	renderTemplate(w, "BlindTest/index.html", data)
+}
+
+func JoinBlindtest(w http.ResponseWriter, r *http.Request) {
+	renderTemplate(w, "BlindTest/JoinPrivateRoom.html", nil)
+}
+
 func EndBlindtest(w http.ResponseWriter, r *http.Request) {
 	renderTemplate(w, "BlindTest/EndGame.html", nil)
 }
@@ -621,11 +664,11 @@ func PetitBac(w http.ResponseWriter, r *http.Request) {
 		}
 		data := Data{
 			RandomLetter: randomLetter,
-			
-				Message: Message{
-					Username: "Admin00",
-					Text: message,
-				},
+
+			Message: Message{
+				Username: "Admin00",
+				Text:     message,
+			},
 		}
 
 		tmpl, err := template.ParseFiles("html/PetitBac/index.html")

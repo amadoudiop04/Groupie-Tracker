@@ -23,7 +23,17 @@
             <div class="deco-Img">    
         </div>
 
-        <p id="timeRemaining">Il reste 10 secondes de musique </p>
+        {{if .DurationOfMusic}}
+        <p id="MusicTimeRemaining">Il reste <span id="musicTimer">{{.DurationOfMusic}}</span> secondes de musique </p>
+        {{else}}
+        <p id="MusicTimeRemaining">Il reste <span id="musicTimer">10</span> secondes de musique </p>
+        {{end}}
+
+        {{if .DurationOfAnswer}}
+        <p id="AnswerTimeRemaining">Il reste <span id="answerTimer">{{.DurationOfAnswer}}</span> secondes pour répondre </p>
+        {{else}}
+        <p id="AnswerTimeRemaining">Il reste <span id="answerTimer">5</span> secondes pour répondre</p>
+        {{end}}
 
         <div class="myAudio">
             <audio id="track" autoplay> <source src="{{ .Track.PreviewURL }}" type="audio/mpeg"> </audio>
