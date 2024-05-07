@@ -5,12 +5,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="5af4b541-60db-4e9a-83ea-982990b4b6db" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/Groupie-Tracker.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Groupie-Tracker.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_19_04_2024_17_17_[Changes]1/Blind-Test-removebg-preview.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_19_04_2024_17_17_[Changes]1/shelved.patch" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_19_04_2024_17_17__Changes_1.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/html/PetitBac/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/html/PetitBac/index.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server.go" beforeDir="false" afterPath="$PROJECT_DIR$/server.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/static/css/petitBac.css" beforeDir="false" afterPath="$PROJECT_DIR$/static/css/petitBac.css" afterDir="false" />
     </list>
@@ -210,6 +204,7 @@
       <workItem from="1714723171841" duration="3103000" />
       <workItem from="1714849720857" duration="459000" />
       <workItem from="1714852345976" duration="599000" />
+      <workItem from="1715000692462" duration="64000" />
     </task>
     <servers />
   </component>

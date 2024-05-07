@@ -2,7 +2,12 @@ package main
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
+	"github.com/gorilla/websocket"
+	_ "github.com/mattn/go-sqlite3"
+	"github.com/sendgrid/sendgrid-go"
+	"github.com/sendgrid/sendgrid-go/helpers/mail"
 	"groupieTracker/database"
 	"groupieTracker/games"
 	"html/template"
@@ -13,11 +18,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-	"encoding/json"
-	"github.com/gorilla/websocket"
-	_ "github.com/mattn/go-sqlite3"
-	"github.com/sendgrid/sendgrid-go"
-	"github.com/sendgrid/sendgrid-go/helpers/mail"
 )
 
 var Pseudo string
@@ -92,7 +92,6 @@ func main() {
 	defer db.Close()
 
 	//db.Exec("DELETE FROM USER WHERE id > 1;") //--> Remove users with id > 1  /!\ TO REMOVE BEFORE DEPLOYMENT /!\
-
 	rowsUsers := database.SelectAllFromTable(db, "USER")
 	database.DisplayUserTable(rowsUsers) //--> Show the table USER in terminal
 
@@ -599,48 +598,47 @@ func PetitBacLandingPage(w http.ResponseWriter, r *http.Request) {
 var messages []Message
 
 func PetitBac(w http.ResponseWriter, r *http.Request) {
-    w.Header().Set("Refresh", "31")
-    var ChatDiscours string
-    if r.Method == "POST" {
-        action := r.FormValue("action")
-        if action == "true" {
-            r.ParseForm()
-            artiste := r.Form.Get("artiste")
-            album := r.Form.Get("album")
-            groupe := r.Form.Get("groupe")
-            instrument := r.Form.Get("instrument")
-            featuring := r.Form.Get("featuring")
+	w.Header().Set("Refresh", "31")
+	var ChatDiscours string
+	if r.Method == "POST" {
+		action := r.FormValue("action")
+		if action == "true" {
+			r.ParseForm()
+			artiste := r.Form.Get("artiste")
+			album := r.Form.Get("album")
+			groupe := r.Form.Get("groupe")
+			instrument := r.Form.Get("instrument")
+			featuring := r.Form.Get("featuring")
 
-            fmt.Println("Nouvelle entrée ajoutée :")
-            fmt.Println("Artiste:", artiste)
-            fmt.Println("Album:", album)
-            fmt.Println("Groupe de musique:", groupe)
-            fmt.Println("Instrument de musique:", instrument)
-            fmt.Println("Featuring:", featuring)
-        }
-		
-        if action == "ChatMessage" {
-            log.Println("put your message")
-            message := r.Form.Get("Message")
-            ChatDiscours = message
-            messages = append(messages, Message{
-                Username:    Pseudo,
-                TextMessage: ChatDiscours,
-            })
+			fmt.Println("Nouvelle entrée ajoutée :")
+			fmt.Println("Artiste:", artiste)
+			fmt.Println("Album:", album)
+			fmt.Println("Groupe de musique:", groupe)
+			fmt.Println("Instrument de musique:", instrument)
+			fmt.Println("Featuring:", featuring)
+		}
 
-            jsonMessage, err := json.Marshal(messages[len(messages)-1])
-            if err != nil {
-                fmt.Println("Error marshaling message to JSON:", err)
-                http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-                return
-            }
-            
-          
-            broadcast <- Message{
-                Username:    Pseudo,
-                TextMessage: string(jsonMessage),
-            }
-        }
+		if action == "ChatMessage" {
+			log.Println("put your message")
+			message := r.Form.Get("Message")
+			ChatDiscours = message
+			messages = append(messages, Message{
+				Username:    Pseudo,
+				TextMessage: ChatDiscours,
+			})
+
+			jsonMessage, err := json.Marshal(messages[len(messages)-1])
+			if err != nil {
+				fmt.Println("Error marshaling message to JSON:", err)
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				return
+			}
+
+			broadcast <- Message{
+				Username:    Pseudo,
+				TextMessage: string(jsonMessage),
+			}
+		}
 		if action == "DeleteMessage" {
 			indexStr := r.Form.Get("messageIndex")
 			index, err := strconv.Atoi(indexStr)
@@ -655,30 +653,29 @@ func PetitBac(w http.ResponseWriter, r *http.Request) {
 			messages = append(messages[:index], messages[index+1:]...)
 		}
 
-    }
+	}
 
-    rand.Seed(time.Now().UnixNano())
-    letters := "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    randomLetter := string(letters[rand.Intn(len(letters))])
+	rand.Seed(time.Now().UnixNano())
+	letters := "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	randomLetter := string(letters[rand.Intn(len(letters))])
 
-    data := Data{
-        RandomLetter: randomLetter,
-        Info:         messages,
-    }
+	data := Data{
+		RandomLetter: randomLetter,
+		Info:         messages,
+	}
 
-    tmpl, err := template.ParseFiles("html/PetitBac/index.html")
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
+	tmpl, err := template.ParseFiles("html/PetitBac/index.html")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-    err = tmpl.Execute(w, data)
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
+	err = tmpl.Execute(w, data)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
-
 
 func PetitBacHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/PetitBac", http.StatusSeeOther)

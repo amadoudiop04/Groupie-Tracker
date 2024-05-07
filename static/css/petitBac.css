@@ -1,6 +1,7 @@
 body {
     font-family: Arial, Helvetica, sans-serif;
     background: rgb(39, 38, 38);
+    overflow: hidden;
     
 }
 
@@ -20,20 +21,18 @@ body {
     border-radius: 20px;
     background: linear-gradient(to bottom right, #50ffd3, #6A5ACD);
     box-shadow: rgba(0, 0, 0, 0.3) 0px 19px 38px, rgba(0, 0, 0, 0.22) 0px 15px 12px;
-    height: 50%;
+    height: 30%;
     width: 50%;
-    transform: translateX(80%) translateY(-5%);
+    transform: translateX(80%) translateY(-39%);
+    font-family: 'Times New Roman', Times, serif;
+    overflow: hidden;
 }
 
 .track-art {
     margin: 2%;
-    margin-left: 180px;
-    justify-content: center;
-    height: 250px;
-    width: 250px;
+    height: 170px;
+    width: 170px;
     border: 2px solid #FFFAFA;
-    background-size: cover;
-    background-position: center;
     border-radius: 50%;
     -moz-box-shadow: 0px 6px 5px black;
     -webkit-box-shadow: 0px 6px 5px black;
@@ -41,8 +40,8 @@ body {
     -moz-border-radius: 190px;
     -webkit-border-radius: 190px;
     border-radius: 190px;
+    transform: translateX(30%);
     background: center / cover no-repeat url("https://img.lovepik.com/background/20211021/large/lovepik-business-brain-background-image_500355186.jpg");
-    animation: rotation 8s infinite linear;
 }
 
 .requestWords {
@@ -55,15 +54,6 @@ body {
     font-size: 2em;
     font-weight: 300;
     font-style: normal;
-    margin-top: 90px;
-}
-
-#randomLetter {
-    color: black;
-    font-size: 1.5em;
-    font-weight: 300;
-    font-style: normal;
-    margin-left: 100px;
 }
 
 #timeRemaining {
@@ -71,8 +61,6 @@ body {
     font-size: 1.5em;
     font-weight: 300;
     font-style: normal;
-    margin-top: 50px;
-    margin-left: 5px;
 }
 
 .wordsContainer {
@@ -97,8 +85,7 @@ body {
     margin: 5px;
     background-color: cornflowerblue;
     font-size: 1.5em;
-    border-radius: 10px;
-    transform: translateX(90%);
+    border-radius: 10px;            
 }
 
 .container {
@@ -152,6 +139,7 @@ body {
     color: rgb(0, 0, 0);
     border: 0.5px black solid;
     border-radius: 5px;
+
 }
 
 .RulesButton {
@@ -166,6 +154,7 @@ body {
     color: rgb(0, 0, 0);
     border: 0.5px black solid;
     border-radius: 5px;
+
 }
 
 .lyrics {
@@ -174,9 +163,7 @@ body {
     color: #ddd;
     background-color: rgba(64, 62, 62, 0.5);
     width: 38%;
-    height: 80%;
     overflow: auto;
-    transform: translateY(100%);
 }
   
 .divParoles {
@@ -185,7 +172,7 @@ body {
     font-optical-sizing: auto;
     font-weight: 400;
     font-style: normal;
-    white-space: pre-line;
+    height: 250px;
 }
   
 .mybtnMessage{
@@ -195,4 +182,16 @@ body {
 
 .myInput{
     border-radius: 10px;
+    margin: 1.5%;
+}
+
+.TextContainer{
+ text-align: center;
+}
+
+.DeleteBtn{
+    color: white;
+    background-color: red;
+    border-radius: 10px;
+    margin: 0.5%;
 }
