@@ -44,7 +44,7 @@ func ApiTrack() *spotify.FullTrack {
 
 	client := spotify.Authenticator{}.NewClient(accessToken)
 
-	playlistID := spotify.ID("37i9dQZF1E37xpTgH5tN1Z?si=e6ee0165030640af")
+	playlistID := spotify.ID("37i9dQZF1E39Yzkf9WsM5K?si=6ddc1f4641a848ef")
 	playlist, err := client.GetPlaylist(playlistID)
 	MyPlaylist = playlist
 	if err != nil {
@@ -166,7 +166,6 @@ type Song struct {
 	TitleSong         string
 	LyricsSong        string
 	ImageURL          string
-	CheatMess         string
 	Scores            int
 	RemainingAttempts int
 	Timer             int
@@ -186,7 +185,6 @@ var CurrentSong = Song{
 	RemainingAttempts: 5,
 	Timer:             30,
 	ThePlaylist:       nil,
-	CheatMess:         "",
 }
 
 func GetLyrics(artist, title string) (string, error) {

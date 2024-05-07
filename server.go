@@ -21,6 +21,8 @@ import (
 )
 
 var Pseudo string
+var messages []Message
+var ChatDiscours string
 
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
@@ -29,6 +31,7 @@ var upgrader = websocket.Upgrader{
 }
 
 type Data struct {
+	Datasgames  games.Song
 	RandomLetter string
 	Info         []Message
 }
@@ -511,28 +514,69 @@ func GuessTheSongLandingPage(w http.ResponseWriter, r *http.Request) {
 func GuessTheSong(w http.ResponseWriter, r *http.Request) {
 	games.LoadData()
 	w.Header().Set("Refresh", "25")
-	html := template.Must(template.ParseFiles("html/GuessTheSong/index.html"))
 	if r.Method == "POST" {
-		input := r.FormValue("value")
-		if games.CompareStrings(input, games.CurrentSong.TitleSong) {
-			games.CurrentSong.Scores += 10
-		} else {
-			games.CurrentSong.RemainingAttempts--
+		action := r.FormValue("action")
+		if action == "guessTheSong" {
+			input := r.FormValue("value")
+			if games.CompareStrings(input, games.CurrentSong.TitleSong) {
+				games.CurrentSong.Scores += 10
+			} else {
+				games.CurrentSong.RemainingAttempts--
+			}
+			if games.CurrentSong.RemainingAttempts == 0 {
+				http.Redirect(w, r, "/GuessTheSongLose", http.StatusSeeOther)
+			}
+			if games.CurrentSong.Scores == 50 {
+				http.Redirect(w, r, "/GuessTheSongWin", http.StatusSeeOther)
+			}
+		}
+		if action == "ChatMessage" {
+			message := r.Form.Get("Message")
+			ChatDiscours = message
+			messages = append(messages, Message{
+				Username:    Pseudo,
+				TextMessage: ChatDiscours,
+			})
+
+			jsonMessage, err := json.Marshal(messages[len(messages)-1])
+			if err != nil {
+				fmt.Println("Error marshaling message to JSON:", err)
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				return
+			}
+
+			broadcast <- Message{
+				Username:    Pseudo,
+				TextMessage: string(jsonMessage),
+			}
+		}
+		if action == "DeleteMessage" {
+			indexStr := r.Form.Get("messageIndex")
+			index, err := strconv.Atoi(indexStr)
+			if err != nil {
+				http.Error(w, "Invalid message index", http.StatusBadRequest)
+				return
+			}
+			if index < 0 || index >= len(messages) {
+				http.Error(w, "Invalid message index", http.StatusBadRequest)
+				return
+			}
+			messages = append(messages[:index], messages[index+1:]...)
 		}
 	}
 
-	if games.CurrentSong.RemainingAttempts == 0 {
-		http.Redirect(w, r, "/GuessTheSongLose", http.StatusSeeOther)
+	medias := Data{
+		Datasgames: games.CurrentSong,
+		Info:       messages,
 	}
 
-	if games.CurrentSong.Scores == 50 {
-		http.Redirect(w, r, "/GuessTheSongWin", http.StatusSeeOther)
-	}
-
-	err := html.Execute(w, games.CurrentSong)
-	if err != nil {
-		return
-	}
+	html := template.Must(template.ParseFiles("html/GuessTheSong/index.html"))
+    err := html.Execute(w, medias)
+    if err != nil {
+        fmt.Println("Error executing template:", err)
+        http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+        return
+    }
 }
 
 func GuessTheSongLose(w http.ResponseWriter, r *http.Request) {
@@ -595,11 +639,8 @@ func PetitBacLandingPage(w http.ResponseWriter, r *http.Request) {
 	renderTemplate(w, "PetitBac/LandingPage.html", nil)
 }
 
-var messages []Message
-
 func PetitBac(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Refresh", "31")
-	var ChatDiscours string
 	if r.Method == "POST" {
 		action := r.FormValue("action")
 		if action == "true" {

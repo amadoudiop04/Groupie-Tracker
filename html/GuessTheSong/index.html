@@ -17,19 +17,34 @@
 <body>
     <h1 class="title-top">Guess the song</h1>
     <div class="scoreBoard">
-        {{.Scores}}/50Pts
-        {{.RemainingAttempts}}Attempts
+        {{.Datasgames.Scores}}/50Pts
+        {{.Datasgames.RemainingAttempts}}Attempts
     </div>
 
     <div class="player">
-        <div class="lyrics">
+        <div class="lyricsContainer">
             <div class="divParoles" id="parolesContainer">
-                <p id="lyrics" style="display: none;">{{.LyricsSong}}</p>
+                <p id="lyrics" style="display: none;">{{.Datasgames.LyricsSong}}</p>
                 <p class="lines" id="line1" style="opacity: 0;"></p>
                 <p class="lines" id="line2" style="opacity: 0;"></p>
                 <p class="lines" id="line3" style="opacity: 0;"></p>
                 <p class="lines" id="line4" style="opacity: 0;"></p>
                 <p class="lines" id="line5" style="opacity: 0;"></p>
+
+                     <div class="ChatMessage">     
+                    <form action="/GuessTheSong" method="post" style="display: inline;">
+                    <div class="Message">
+                    Chat message🖊
+                    {{range $index, $message := .Info}}
+                    {{$message.Username}}: {{$message.TextMessage}}<button class="DeleteBtn" type="submit" name="action"
+                        value="DeleteMessage">🗑</button>
+                    <input type="hidden" name="messageIndex" value="{{$index}}">
+                    {{end}}
+                    <input class="myInput" name="Message" id="Message" placeholder="écrivez votre message" type="text"><button name="action" value="ChatMessage" class="mybtnMessage">Envoyer</button>
+                    </div>
+                    </form>
+                    </div> 
+
             </div>
         </div>
         <div class="wrapper">
@@ -39,9 +54,6 @@
                 <div class="track-name">
                 </div>
                 <div class="track-artist">
-                    <div class="cheatMess">
-                    {{.CheatMess}}
-                    </div>
                 </div>
             </div>
 
@@ -55,10 +67,10 @@
 
             <p id="timeRemaining">Il reste 25 secondes pour répondre</p>
 
-            <form action="/" method="post">
+            <form action="/GuessTheSong" method="post">
                 <div class="inputResquest">
                     <input class="requestSong" type="text" placeholder="Votre réponse" name="value" autocomplete="off">
-                    <button class="Mybtn" type="submit">Valider</button>
+                    <button class="Mybtn" name="action" value="guessTheSong" type="submit">Valider</button>
                 </div>
             </form>
         </div>
