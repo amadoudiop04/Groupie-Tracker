@@ -31,7 +31,8 @@ var upgrader = websocket.Upgrader{
 }
 
 type Data struct {
-	Datasgames  games.Song
+	DatasgameBlindTest games.PageData
+	Datasgames   games.Song
 	RandomLetter string
 	Info         []Message
 }
@@ -484,6 +485,7 @@ func BlindtestLandingPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func Blindtest(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Refresh", "16")
 	tracks := games.Api("6Xf0gjt1YmwvEG5iS8QOfg?si=2de553d01ff84abb")
 	tracks = games.RemovePlayedTracks(tracks)
 	currentTrack := games.NextTrack(tracks)
@@ -498,9 +500,58 @@ func Blindtest(w http.ResponseWriter, r *http.Request) {
 		Track: currentTrack,
 	}
 
-	w.Header().Set("Refresh", "16")
-	renderTemplate(w, "BlindTest/index.html", data)
+	if r.Method == "POST" {
+		action := r.FormValue("action")
+		if action == "BlindTest" {
 
+		}
+		if action == "ChatMessage" {
+			message := r.Form.Get("Message")
+			ChatDiscours = message
+			messages = append(messages, Message{
+				Username:    Pseudo,
+				TextMessage: ChatDiscours,
+			})
+
+			jsonMessage, err := json.Marshal(messages[len(messages)-1])
+			if err != nil {
+				fmt.Println("Error marshaling message to JSON:", err)
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				return
+			}
+
+			broadcast <- Message{
+				Username:    Pseudo,
+				TextMessage: string(jsonMessage),
+			}
+		}
+		if action == "DeleteMessage" {
+			indexStr := r.Form.Get("messageIndex")
+			index, err := strconv.Atoi(indexStr)
+			if err != nil {
+				http.Error(w, "Invalid message index", http.StatusBadRequest)
+				return
+			}
+			if index < 0 || index >= len(messages) {
+				http.Error(w, "Invalid message index", http.StatusBadRequest)
+				return
+			}
+			messages = append(messages[:index], messages[index+1:]...)
+		}
+	}
+
+	 mediasBlindtest := Data{
+		DatasgameBlindTest: data,
+		Info:       messages,
+	}
+	
+	html := template.Must(template.ParseFiles("html/BlindTest/index.html"))
+	err := html.Execute(w, mediasBlindtest )
+	if err != nil {
+		fmt.Println("Error executing template:", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
 }
 
 func EndBlindtest(w http.ResponseWriter, r *http.Request) {
@@ -571,12 +622,12 @@ func GuessTheSong(w http.ResponseWriter, r *http.Request) {
 	}
 
 	html := template.Must(template.ParseFiles("html/GuessTheSong/index.html"))
-    err := html.Execute(w, medias)
-    if err != nil {
-        fmt.Println("Error executing template:", err)
-        http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-        return
-    }
+	err := html.Execute(w, medias)
+	if err != nil {
+		fmt.Println("Error executing template:", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
 }
 
 func GuessTheSongLose(w http.ResponseWriter, r *http.Request) {

@@ -30,21 +30,22 @@
                 <p class="lines" id="line3" style="opacity: 0;"></p>
                 <p class="lines" id="line4" style="opacity: 0;"></p>
                 <p class="lines" id="line5" style="opacity: 0;"></p>
-
+                
                      <div class="ChatMessage">     
                     <form action="/GuessTheSong" method="post" style="display: inline;">
                     <div class="Message">
                     Chat message🖊
+                    <br>
                     {{range $index, $message := .Info}}
                     {{$message.Username}}: {{$message.TextMessage}}<button class="DeleteBtn" type="submit" name="action"
                         value="DeleteMessage">🗑</button>
                     <input type="hidden" name="messageIndex" value="{{$index}}">
                     {{end}}
+                    <br>
                     <input class="myInput" name="Message" id="Message" placeholder="écrivez votre message" type="text"><button name="action" value="ChatMessage" class="mybtnMessage">Envoyer</button>
                     </div>
                     </form>
                     </div> 
-
             </div>
         </div>
         <div class="wrapper">
