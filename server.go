@@ -4,10 +4,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"github.com/gorilla/websocket"
-	_ "github.com/mattn/go-sqlite3"
-	"github.com/sendgrid/sendgrid-go"
-	"github.com/sendgrid/sendgrid-go/helpers/mail"
 	"groupieTracker/database"
 	"groupieTracker/games"
 	"html/template"
@@ -18,6 +14,11 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/gorilla/websocket"
+	_ "github.com/mattn/go-sqlite3"
+	"github.com/sendgrid/sendgrid-go"
+	"github.com/sendgrid/sendgrid-go/helpers/mail"
 )
 
 var Pseudo string
@@ -32,9 +33,9 @@ var upgrader = websocket.Upgrader{
 
 type Data struct {
 	DatasgameBlindTest games.PageData
-	Datasgames   games.Song
-	RandomLetter string
-	Info         []Message
+	Datasgames         games.Song
+	RandomLetter       string
+	Info               []Message
 }
 
 type Message struct {
@@ -95,7 +96,8 @@ func main() {
 	db := database.InitTable("USER")
 	defer db.Close()
 
-	//db.Exec("DELETE FROM USER WHERE id > 1;") //--> Remove users with id > 1  /!\ TO REMOVE BEFORE DEPLOYMENT /!\
+	db.Exec("DELETE FROM USER WHERE id > 1;") //--> Remove users with id > 1  /!\ TO REMOVE BEFORE DEPLOYMENT /!\
+
 	rowsUsers := database.SelectAllFromTable(db, "USER")
 	database.DisplayUserTable(rowsUsers) //--> Show the table USER in terminal
 
@@ -113,7 +115,10 @@ func main() {
 	http.HandleFunc("/UserProfile", UserProfile)
 	http.HandleFunc("/UserProfileHandler", UserProfileHandler)
 	http.HandleFunc("/BlindtestLandingPage", BlindtestLandingPage)
-	http.HandleFunc("/Blindtest", Blindtest)
+	http.HandleFunc("/PublicBlindtest", Blindtest)
+	http.HandleFunc("/CreatePrivateBlindtest", CreateBlindtest)
+	http.HandleFunc("/CreateBlindtestHandler", CreateBlindtestHandler)
+	http.HandleFunc("/JoinPrivateBlindtest", JoinBlindtest)
 	http.HandleFunc("/EndBlindtest", EndBlindtest)
 	http.HandleFunc("/BlindtestRules", BlindtestRules)
 	http.HandleFunc("/GuessTheSongLandingPage", GuessTheSongLandingPage)
@@ -540,18 +545,68 @@ func Blindtest(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	 mediasBlindtest := Data{
+	mediasBlindtest := Data{
 		DatasgameBlindTest: data,
-		Info:       messages,
+		Info:               messages,
 	}
-	
+
 	html := template.Must(template.ParseFiles("html/BlindTest/index.html"))
-	err := html.Execute(w, mediasBlindtest )
+	err := html.Execute(w, mediasBlindtest)
 	if err != nil {
 		fmt.Println("Error executing template:", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
+}
+
+func CreateBlindtest(w http.ResponseWriter, r *http.Request) {
+	renderTemplate(w, "BlindTest/CreatePrivateRoom.html", nil)
+}
+
+func CreateBlindtestHandler(w http.ResponseWriter, r *http.Request) {
+	gameTurns, _ := strconv.Atoi(r.FormValue("gameTurns"))
+	musicDuration, _ := strconv.Atoi(r.FormValue("musicDuration"))
+	answerDuration, _ := strconv.Atoi(r.FormValue("answerDuration"))
+	roomName := r.FormValue("roomName")
+	tracks := games.Api("6Xf0gjt1YmwvEG5iS8QOfg?si=2de553d01ff84abb")
+	tracks = games.RemovePlayedTracks(tracks)
+	currentTrack := games.NextTrack(tracks)
+	if gameTurns == "" {
+		gameTurns = 5
+	}
+	if musicDuration == "" {
+		musicDuration = 10
+	}
+	if answerDuration == "" {
+		answerDuration = 5
+	}
+
+	games.BlindtestData.Name = roomName
+	games.BlindtestData.NumberOfTurn = gameTurns
+	games.BlindtestData.MusicDuration = musicDuration
+	games.BlindtestData.AnswerDuration = answerDuration
+
+	cookie, err := r.Cookie("session_id")
+	if err != nil {
+		http.Redirect(w, r, "/Login", http.StatusSeeOther)
+		return
+	}
+
+	sessionID := cookie.Value
+
+	db := database.InitTable("ROOM")
+	defer db.Close()
+
+	userID, _ := strconv.Atoi(sessionID)
+	maxPlayers := 10
+	gameID := 2000
+	database.CreateRoom(db, userID, maxPlayers, roomName, gameID)
+
+	http.Redirect(w, r, "/Blindtest", http.StatusSeeOther)
+}
+
+func JoinBlindtest(w http.ResponseWriter, r *http.Request) {
+	renderTemplate(w, "BlindTest/JoinPrivateRoom.html", nil)
 }
 
 func EndBlindtest(w http.ResponseWriter, r *http.Request) {

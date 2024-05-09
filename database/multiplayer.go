@@ -14,12 +14,11 @@ type Room struct {
 	GameID     int
 }
 
-func CreateRoom(db *sql.DB, createdBy int, maxPlayers int, name string, gameID int) error {
+func CreateRoom(db *sql.DB, createdBy int, maxPlayers int, name string, gameID int) {
 	_, err := db.Exec("INSERT INTO ROOMS (created_by, max_player, name, id_game) VALUES (?, ?, ?, ?)", createdBy, maxPlayers, name, gameID)
 	if err != nil {
 		log.Println("Error creating room:", err)
 	}
-	return err
 }
 
 func GetAvailableRooms(db *sql.DB) ([]Room, error) {

@@ -87,14 +87,13 @@ func IsTrackPlayed(track *spotify.SimpleTrack) bool {
 }
 
 type gameData struct {
-	Name       string
-	ScoreBoard int
+	Name           string
+	NumberOfTurn   int
+	MusicDuration  int
+	AnswerDuration int
 }
 
-var Infos = gameData{
-	Name:       "",
-	ScoreBoard: 0,
-}
+var BlindtestData gameData
 
 type PageData struct {
 	Track *spotify.SimpleTrack
