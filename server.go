@@ -18,7 +18,6 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/sendgrid/sendgrid-go"
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
-	"github.com/zmb3/spotify"
 )
 
 var upgrader = websocket.Upgrader{
@@ -508,34 +507,45 @@ func CreateBlindtest(w http.ResponseWriter, r *http.Request) {
 }
 
 func CreateBlindtestHandler(w http.ResponseWriter, r *http.Request) {
-	gameTurns := r.FormValue("gameTurns")
-	musicDuration := r.FormValue("musicDuration")
-	answerDuration := r.FormValue("answerDuration")
+	gameTurns, _ := strconv.Atoi(r.FormValue("gameTurns"))
+	musicDuration, _ := strconv.Atoi(r.FormValue("musicDuration"))
+	answerDuration, _ := strconv.Atoi(r.FormValue("answerDuration"))
+	roomName := r.FormValue("roomName")
 	tracks := games.Api("6Xf0gjt1YmwvEG5iS8QOfg?si=2de553d01ff84abb")
 	tracks = games.RemovePlayedTracks(tracks)
 	currentTrack := games.NextTrack(tracks)
 	if gameTurns == "" {
-		gameTurns = "5"
+		gameTurns = 5
 	}
 	if musicDuration == "" {
-		musicDuration = "10"
+		musicDuration = 10
 	}
 	if answerDuration == "" {
-		answerDuration = "5"
+		answerDuration = 5
 	}
 
-	data := struct {
-		NbGameTurns      string
-		DurationOfMusic  string
-		DurationOfAnswer string
-		Track            *spotify.SimpleTrack
-	}{
-		NbGameTurns:      gameTurns,
-		DurationOfMusic:  musicDuration,
-		DurationOfAnswer: answerDuration,
-		Track:            currentTrack,
+	games.BlindtestData.Name = roomName
+	games.BlindtestData.NumberOfTurn = gameTurns
+	games.BlindtestData.MusicDuration = musicDuration
+	games.BlindtestData.AnswerDuration = answerDuration
+
+	cookie, err := r.Cookie("session_id")
+	if err != nil {
+		http.Redirect(w, r, "/Login", http.StatusSeeOther)
+		return
 	}
-	renderTemplate(w, "BlindTest/index.html", data)
+
+	sessionID := cookie.Value
+
+	db := database.InitTable("ROOM")
+	defer db.Close()
+
+	userID, _ := strconv.Atoi(sessionID)
+	maxPlayers := 10
+	gameID := 2000
+	database.CreateRoom(db, userID, maxPlayers, roomName, gameID)
+
+	http.Redirect(w, r, "/Blindtest", http.StatusSeeOther)
 }
 
 func JoinBlindtest(w http.ResponseWriter, r *http.Request) {
