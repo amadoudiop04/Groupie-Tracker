@@ -14,10 +14,145 @@ type Room struct {
 	GameID     int
 }
 
-func CreateRoom(db *sql.DB, createdBy int, maxPlayers int, name string, gameID int) {
-	_, err := db.Exec("INSERT INTO ROOMS (created_by, max_player, name, id_game) VALUES (?, ?, ?, ?)", createdBy, maxPlayers, name, gameID)
+func CreateBlindtestRoom(createdBy int, maxPlayers int, name string, gameID int, numberOfGameTurns int, timeOfMusic int, timeToAnswer int) {
+	db := InitTable("ROOMS")
+	defer db.Close()
+
+	tx, err := db.Begin()
+	if err != nil {
+		log.Println("Error beginning transaction:", err)
+		return
+	}
+	defer tx.Rollback()
+
+	// Create the good ID for the room
+	var roomID int
+	for i := 0; i < 100; i++ {
+		roomID = (gameID * 100) + i
+		row := tx.QueryRow("SELECT COUNT(*) FROM ROOMS WHERE id = ?", roomID)
+		var count int
+		err := row.Scan(&count)
+		if err != nil {
+			log.Println("Error checking room ID:", err)
+			return
+		}
+		if count == 0 {
+			break
+		}
+	}
+
+	// Créer la room avec l'ID déterminé
+	_, err = tx.Exec("INSERT INTO ROOMS (id, created_by, max_player, name, id_game) VALUES (?, ?, ?, ?, ?)", roomID, createdBy, maxPlayers, name, gameID)
 	if err != nil {
 		log.Println("Error creating room:", err)
+		return
+	}
+
+	// Ouvrir une connexion à la table GAME_ROOM
+	gameRoomDB := InitTable("GAME_ROOM")
+	defer gameRoomDB.Close()
+
+	// Insérer les données dans la table GAME_ROOM
+	_, err = gameRoomDB.Exec("INSERT INTO GAME_ROOM (id_room, number_of_game_turns, blindtest_time_of_music, blindtest_time_to_answer) VALUES (?, ?, ?, ?)", roomID, numberOfGameTurns, timeOfMusic, timeToAnswer)
+	if err != nil {
+		log.Println("Error creating game room:", err)
+		return
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		log.Println("Error committing transaction:", err)
+		return
+	}
+}
+
+func CreatePetitbacRoom(db *sql.DB, createdBy int, maxPlayers int, name string, gameID int, numberOfGameTurns int, categories string, timeToAnswer int) {
+	tx, err := db.Begin()
+	if err != nil {
+		log.Println("Error beginning transaction:", err)
+		return
+	}
+	defer tx.Rollback()
+
+	// Create the good ID for the room
+	var roomID int
+	for i := 0; i < 100; i++ {
+		roomID = (gameID * 100) + i
+		row := tx.QueryRow("SELECT COUNT(*) FROM ROOMS WHERE id = ?", roomID)
+		var count int
+		err := row.Scan(&count)
+		if err != nil {
+			log.Println("Error checking room ID:", err)
+			return
+		}
+		if count == 0 {
+			break
+		}
+	}
+
+	// Créer la room avec l'ID déterminé
+	_, err = tx.Exec("INSERT INTO ROOMS (id, created_by, max_player, name, id_game) VALUES (?, ?, ?, ?, ?)", roomID, createdBy, maxPlayers, name, gameID)
+	if err != nil {
+		log.Println("Error creating room:", err)
+		return
+	}
+
+	// Insérer les données dans la table GAME_ROOM
+	_, err = tx.Exec("INSERT INTO GAME_ROOM (id_room, number_of_game_turns, petitbac_categories, petitbac_time_to_answer) VALUES (?, ?, ?, ?)", roomID, numberOfGameTurns, categories, timeToAnswer)
+	if err != nil {
+		log.Println("Error creating game room:", err)
+		return
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		log.Println("Error committing transaction:", err)
+		return
+	}
+}
+
+func CreateGuessthesongRoom(db *sql.DB, createdBy int, maxPlayers int, name string, gameID int, numberOfGameTurns int, difficulty string, timeToAnswer int) {
+	tx, err := db.Begin()
+	if err != nil {
+		log.Println("Error beginning transaction:", err)
+		return
+	}
+	defer tx.Rollback()
+
+	// Create the good ID for the room
+	var roomID int
+	for i := 0; i < 100; i++ {
+		roomID = (gameID * 100) + i
+		row := tx.QueryRow("SELECT COUNT(*) FROM ROOMS WHERE id = ?", roomID)
+		var count int
+		err := row.Scan(&count)
+		if err != nil {
+			log.Println("Error checking room ID:", err)
+			return
+		}
+		if count == 0 {
+			break
+		}
+	}
+
+	// Créer la room avec l'ID déterminé
+	_, err = tx.Exec("INSERT INTO ROOMS (id, created_by, max_player, name, id_game) VALUES (?, ?, ?, ?, ?)", roomID, createdBy, maxPlayers, name, gameID)
+	if err != nil {
+		log.Println("Error creating room:", err)
+		return
+	}
+
+	// Insérer les données dans la table GAME_ROOM
+	_, err = tx.Exec("INSERT INTO GAME_ROOM (id_room, number_of_game_turns, guessthesong_difficulty, guessthesong_time_to_answer) VALUES (?, ?, ?, ?)", roomID, numberOfGameTurns, difficulty, timeToAnswer)
+	if err != nil {
+		log.Println("Error creating game room:", err)
+		return
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		log.Println("Error committing transaction:", err)
+		return
 	}
 }
 

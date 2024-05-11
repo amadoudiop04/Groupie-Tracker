@@ -95,8 +95,12 @@ func handleMessages() {
 func main() {
 	db := database.InitTable("USER")
 	defer db.Close()
+	//roomDB := database.InitTable("ROOMS")
+	//gameRoomDB := database.InitTable("GAME_ROOM")
 
 	db.Exec("DELETE FROM USER WHERE id > 1;") //--> Remove users with id > 1  /!\ TO REMOVE BEFORE DEPLOYMENT /!\
+	//roomDB.Exec("DELETE FROM ROOMS WHERE id > 1;")
+	//gameRoomDB.Exec("DELETE FROM GAME_ROOM WHERE id_room > 1;")
 
 	rowsUsers := database.SelectAllFromTable(db, "USER")
 	database.DisplayUserTable(rowsUsers) //--> Show the table USER in terminal
@@ -507,9 +511,6 @@ func Blindtest(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == "POST" {
 		action := r.FormValue("action")
-		if action == "BlindTest" {
-
-		}
 		if action == "ChatMessage" {
 			message := r.Form.Get("Message")
 			ChatDiscours = message
@@ -568,23 +569,17 @@ func CreateBlindtestHandler(w http.ResponseWriter, r *http.Request) {
 	musicDuration, _ := strconv.Atoi(r.FormValue("musicDuration"))
 	answerDuration, _ := strconv.Atoi(r.FormValue("answerDuration"))
 	roomName := r.FormValue("roomName")
-	tracks := games.Api("6Xf0gjt1YmwvEG5iS8QOfg?si=2de553d01ff84abb")
-	tracks = games.RemovePlayedTracks(tracks)
-	currentTrack := games.NextTrack(tracks)
-	if gameTurns == "" {
+	maxPlayer, _ := strconv.Atoi(r.FormValue("maxPlayer"))
+
+	if gameTurns <= 0 {
 		gameTurns = 5
 	}
-	if musicDuration == "" {
+	if musicDuration <= 0 {
 		musicDuration = 10
 	}
-	if answerDuration == "" {
+	if answerDuration <= 0 {
 		answerDuration = 5
 	}
-
-	games.BlindtestData.Name = roomName
-	games.BlindtestData.NumberOfTurn = gameTurns
-	games.BlindtestData.MusicDuration = musicDuration
-	games.BlindtestData.AnswerDuration = answerDuration
 
 	cookie, err := r.Cookie("session_id")
 	if err != nil {
@@ -594,13 +589,9 @@ func CreateBlindtestHandler(w http.ResponseWriter, r *http.Request) {
 
 	sessionID := cookie.Value
 
-	db := database.InitTable("ROOM")
-	defer db.Close()
-
 	userID, _ := strconv.Atoi(sessionID)
-	maxPlayers := 10
-	gameID := 2000
-	database.CreateRoom(db, userID, maxPlayers, roomName, gameID)
+	gameID := 1
+	database.CreateBlindtestRoom(userID, maxPlayer, roomName, gameID, gameTurns, musicDuration, answerDuration)
 
 	http.Redirect(w, r, "/Blindtest", http.StatusSeeOther)
 }

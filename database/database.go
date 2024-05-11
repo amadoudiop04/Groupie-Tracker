@@ -43,6 +43,17 @@ func InitTable(database string) *sql.DB {
 					id INTEGER PRIMARY KEY,
 					name TEXT NOT NULL
 				);
+				CREATE TABLE IF NOT EXISTS GAME_ROOM (
+					id_room INTEGER PRIMARY KEY,
+					number_of_game_turns INTEGER,
+					blindtest_time_of_music INTEGER,
+					blindtest_time_to_answer INTEGER,
+					petitbac_categories TEXT,
+					petitbac_time_to_answer INTEGER,
+					guessthesong_difficulty TEXT,
+					guessthesong_time_to_answer INTEGER,
+					FOREIGN KEY (id_room) REFERENCES ROOMS(id)
+				);
 				`
 	_, err = db.Exec(sqlStmt)
 
