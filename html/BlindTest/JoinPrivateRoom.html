@@ -14,17 +14,14 @@
 <body>
     <h1 class="title-top">Blind Test</h1>
     
-    <div class="container-block">
-        <div class="audioContainer">
-            <div class="deco-Img">    
-        </div>
-        <div class="RoomsButtons">
-            <a href="/CreateBlindtest"><button class="RoomsButton">Créer un serveur privé</button></a>
-            <a href="/JoinBlindtest"><button class="RoomsButton">Rejoindre un serveur privé</button></a>
-            <a href="/PublicBlindtest"><button class="RoomsButton">Rejoindre le serveur public</button></a>
-        </div>
-        <a href="/BlindtestRules"><button class="RulesButton">Règles</button></a>
-    </div>
+    <form id="JoinRoom" action="/JoinBlindtestHandler" method="post">
+        <input type="number" name="roomID" placeholder="Identifiant du serveur" required>
+        <button type="submit">Valider</button>
+    </form>
+
+    {{if .ErrorMessage}}
+    <p style="color: red; text-align: center; margin-bottom: 10px;">{{.ErrorMessage}}</p>
+    {{end}}
         
 </body>
 

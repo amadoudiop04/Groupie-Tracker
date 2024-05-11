@@ -2,6 +2,8 @@ package database
 
 import (
 	"database/sql"
+	"errors"
+	"fmt"
 	"log"
 )
 
@@ -14,27 +16,19 @@ type Room struct {
 	GameID     int
 }
 
-func CreateBlindtestRoom(createdBy int, maxPlayers int, name string, gameID int, numberOfGameTurns int, timeOfMusic int, timeToAnswer int) {
+func CreateRoom(createdBy int, maxPlayers int, name string, gameID int) int {
 	db := InitTable("ROOMS")
 	defer db.Close()
-
-	tx, err := db.Begin()
-	if err != nil {
-		log.Println("Error beginning transaction:", err)
-		return
-	}
-	defer tx.Rollback()
 
 	// Create the good ID for the room
 	var roomID int
 	for i := 0; i < 100; i++ {
 		roomID = (gameID * 100) + i
-		row := tx.QueryRow("SELECT COUNT(*) FROM ROOMS WHERE id = ?", roomID)
+		row := db.QueryRow("SELECT COUNT(*) FROM ROOMS WHERE id = ?", roomID)
 		var count int
 		err := row.Scan(&count)
 		if err != nil {
 			log.Println("Error checking room ID:", err)
-			return
 		}
 		if count == 0 {
 			break
@@ -42,154 +36,97 @@ func CreateBlindtestRoom(createdBy int, maxPlayers int, name string, gameID int,
 	}
 
 	// Créer la room avec l'ID déterminé
-	_, err = tx.Exec("INSERT INTO ROOMS (id, created_by, max_player, name, id_game) VALUES (?, ?, ?, ?, ?)", roomID, createdBy, maxPlayers, name, gameID)
+	_, err := db.Exec("INSERT INTO ROOMS (id, created_by, max_player, name, id_game) VALUES (?, ?, ?, ?, ?)", roomID, createdBy, maxPlayers, name, gameID)
 	if err != nil {
 		log.Println("Error creating room:", err)
-		return
 	}
+
+	JoinRoom(roomID, createdBy)
+
+	return roomID
+}
+
+func CreateBlindtestRoom(createdBy int, maxPlayers int, name string, gameID int, numberOfGameTurns int, timeOfMusic int, timeToAnswer int) {
+	roomID := CreateRoom(createdBy, maxPlayers, name, gameID)
 
 	// Ouvrir une connexion à la table GAME_ROOM
 	gameRoomDB := InitTable("GAME_ROOM")
 	defer gameRoomDB.Close()
 
 	// Insérer les données dans la table GAME_ROOM
-	_, err = gameRoomDB.Exec("INSERT INTO GAME_ROOM (id_room, number_of_game_turns, blindtest_time_of_music, blindtest_time_to_answer) VALUES (?, ?, ?, ?)", roomID, numberOfGameTurns, timeOfMusic, timeToAnswer)
+	_, err := gameRoomDB.Exec("INSERT INTO GAME_ROOM (id_room, number_of_game_turns, blindtest_time_of_music, blindtest_time_to_answer) VALUES (?, ?, ?, ?)", roomID, numberOfGameTurns, timeOfMusic, timeToAnswer)
 	if err != nil {
 		log.Println("Error creating game room:", err)
-		return
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		log.Println("Error committing transaction:", err)
 		return
 	}
 }
 
-func CreatePetitbacRoom(db *sql.DB, createdBy int, maxPlayers int, name string, gameID int, numberOfGameTurns int, categories string, timeToAnswer int) {
-	tx, err := db.Begin()
-	if err != nil {
-		log.Println("Error beginning transaction:", err)
-		return
-	}
-	defer tx.Rollback()
+func CreatePetitbacRoom(createdBy int, maxPlayers int, name string, gameID int, numberOfGameTurns int, categories string, timeToAnswer int) {
+	roomID := CreateRoom(createdBy, maxPlayers, name, gameID)
 
-	// Create the good ID for the room
-	var roomID int
-	for i := 0; i < 100; i++ {
-		roomID = (gameID * 100) + i
-		row := tx.QueryRow("SELECT COUNT(*) FROM ROOMS WHERE id = ?", roomID)
-		var count int
-		err := row.Scan(&count)
-		if err != nil {
-			log.Println("Error checking room ID:", err)
-			return
-		}
-		if count == 0 {
-			break
-		}
-	}
-
-	// Créer la room avec l'ID déterminé
-	_, err = tx.Exec("INSERT INTO ROOMS (id, created_by, max_player, name, id_game) VALUES (?, ?, ?, ?, ?)", roomID, createdBy, maxPlayers, name, gameID)
-	if err != nil {
-		log.Println("Error creating room:", err)
-		return
-	}
+	// Ouvrir une connexion à la table GAME_ROOM
+	gameRoomDB := InitTable("GAME_ROOM")
+	defer gameRoomDB.Close()
 
 	// Insérer les données dans la table GAME_ROOM
-	_, err = tx.Exec("INSERT INTO GAME_ROOM (id_room, number_of_game_turns, petitbac_categories, petitbac_time_to_answer) VALUES (?, ?, ?, ?)", roomID, numberOfGameTurns, categories, timeToAnswer)
+	_, err := gameRoomDB.Exec("INSERT INTO GAME_ROOM (id_room, number_of_game_turns, petitbac_categories, petitbac_time_to_answer) VALUES (?, ?, ?, ?)", roomID, numberOfGameTurns, categories, timeToAnswer)
 	if err != nil {
 		log.Println("Error creating game room:", err)
-		return
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		log.Println("Error committing transaction:", err)
 		return
 	}
 }
 
 func CreateGuessthesongRoom(db *sql.DB, createdBy int, maxPlayers int, name string, gameID int, numberOfGameTurns int, difficulty string, timeToAnswer int) {
-	tx, err := db.Begin()
-	if err != nil {
-		log.Println("Error beginning transaction:", err)
-		return
-	}
-	defer tx.Rollback()
+	roomID := CreateRoom(createdBy, maxPlayers, name, gameID)
 
-	// Create the good ID for the room
-	var roomID int
-	for i := 0; i < 100; i++ {
-		roomID = (gameID * 100) + i
-		row := tx.QueryRow("SELECT COUNT(*) FROM ROOMS WHERE id = ?", roomID)
-		var count int
-		err := row.Scan(&count)
-		if err != nil {
-			log.Println("Error checking room ID:", err)
-			return
-		}
-		if count == 0 {
-			break
-		}
-	}
-
-	// Créer la room avec l'ID déterminé
-	_, err = tx.Exec("INSERT INTO ROOMS (id, created_by, max_player, name, id_game) VALUES (?, ?, ?, ?, ?)", roomID, createdBy, maxPlayers, name, gameID)
-	if err != nil {
-		log.Println("Error creating room:", err)
-		return
-	}
+	// Ouvrir une connexion à la table GAME_ROOM
+	gameRoomDB := InitTable("GAME_ROOM")
+	defer gameRoomDB.Close()
 
 	// Insérer les données dans la table GAME_ROOM
-	_, err = tx.Exec("INSERT INTO GAME_ROOM (id_room, number_of_game_turns, guessthesong_difficulty, guessthesong_time_to_answer) VALUES (?, ?, ?, ?)", roomID, numberOfGameTurns, difficulty, timeToAnswer)
+	_, err := gameRoomDB.Exec("INSERT INTO GAME_ROOM (id_room, number_of_game_turns, guessthesong_difficulty, guessthesong_time_to_answer) VALUES (?, ?, ?, ?)", roomID, numberOfGameTurns, difficulty, timeToAnswer)
 	if err != nil {
 		log.Println("Error creating game room:", err)
 		return
 	}
-
-	err = tx.Commit()
-	if err != nil {
-		log.Println("Error committing transaction:", err)
-		return
-	}
 }
 
-func GetAvailableRooms(db *sql.DB) ([]Room, error) {
-	var rooms []Room
-	rows, err := db.Query("SELECT id, created_by, max_player, name, id_game FROM ROOMS")
-	if err != nil {
-		log.Println("Error fetching rooms:", err)
-		return rooms, err
-	}
-	defer rows.Close()
+func JoinRoom(roomID int, userID int) error {
+	db := InitTable("ROOM_USERS")
+	defer db.Close()
 
-	for rows.Next() {
-		var room Room
-		if err := rows.Scan(&room.Id, &room.CreatedBy, &room.MaxPlayers, &room.Name, &room.GameID); err != nil {
-			log.Println("Error scanning room row:", err)
-			continue
-		}
-		rooms = append(rooms, room)
-	}
-	return rooms, nil
-}
-
-func JoinRoom(db *sql.DB, roomID int, userID int) error {
 	_, err := db.Exec("INSERT INTO ROOM_USERS (id_room, id_user) VALUES (?, ?)", roomID, userID)
 	if err != nil {
 		log.Println("Error joining room:", err)
+		return err
 	}
-	return err
+	return nil
 }
 
-func LeaveRoom(db *sql.DB, roomID int, userID int) error {
+func LeaveRoom(roomID int, userID int) error {
+	db := InitTable("ROOM_USERS")
+	defer db.Close()
+
 	_, err := db.Exec("DELETE FROM ROOM_USERS WHERE id_room = ? AND id_user = ?", roomID, userID)
 	if err != nil {
 		log.Println("Error leaving room:", err)
 	}
 	return err
+}
+
+func VerifyRoom(roomID int) bool {
+	db := InitTable("ROOMS")
+	defer db.Close()
+
+	var count int
+	row := db.QueryRow("SELECT COUNT(*) FROM ROOMS WHERE id = ?", roomID)
+	err := row.Scan(&count)
+	if err != nil {
+		log.Println("Error verifying room:", err)
+		return false
+	}
+
+	return count > 0
 }
 
 func CheckRoomCapacity(db *sql.DB, roomID int) (bool, error) {
@@ -217,6 +154,22 @@ func GetRoomDetails(db *sql.DB, roomID int) (Room, error) {
 		return room, err
 	}
 	return room, nil
+}
+
+func GetRoomIDByUserID(userID int) (int, error) {
+	db := InitTable("ROOM_USERS")
+	defer db.Close()
+
+	var roomID int
+	err := db.QueryRow("SELECT id_room FROM ROOM_USERS WHERE id_user = ?", userID).Scan(&roomID)
+	if err != nil {
+		fmt.Println(err)
+		if err == sql.ErrNoRows {
+			return 0, errors.New("No room found for the user")
+		}
+		return 0, err
+	}
+	return roomID, nil
 }
 
 // ---------------------------ROOM_USERS---------------------------\\
@@ -328,4 +281,32 @@ func GetAllGames(db *sql.DB) ([]*Game, error) {
 		return nil, err
 	}
 	return games, nil
+}
+
+// ---------------------------GAME_ROOM---------------------------\\
+
+type GameRoomData struct {
+	NumberOfGameTurns        int
+	BlindtestTimeOfMusic     int
+	BlindtestTimeToAnswer    int
+	PetitbacCategories       string
+	PetitbacTimeToAnswer     int
+	GuessthesongDifficulty   string
+	GuessthesongTimeToAnswer int
+}
+
+func GetRoomData(roomID int) (GameRoomData, error) {
+	db := InitTable("GAME_ROOM")
+	defer db.Close()
+
+	var gameRoomData GameRoomData
+	row := db.QueryRow("SELECT COALESCE(number_of_game_turns, 0), COALESCE(blindtest_time_of_music, 0), COALESCE(blindtest_time_to_answer, 0), COALESCE(petitbac_categories, ''), COALESCE(petitbac_time_to_answer, 0), COALESCE(guessthesong_difficulty, ''), COALESCE(guessthesong_time_to_answer, 0) FROM GAME_ROOM WHERE id_room = ?", roomID)
+	err := row.Scan(&gameRoomData.NumberOfGameTurns, &gameRoomData.BlindtestTimeOfMusic, &gameRoomData.BlindtestTimeToAnswer, &gameRoomData.PetitbacCategories, &gameRoomData.PetitbacTimeToAnswer, &gameRoomData.GuessthesongDifficulty, &gameRoomData.GuessthesongTimeToAnswer)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return GameRoomData{}, errors.New("No game room data found for the room")
+		}
+		return GameRoomData{}, err
+	}
+	return gameRoomData, nil
 }

@@ -37,7 +37,7 @@
         {{end}}
 
         <div class="myAudio">
-            <audio id="track" autoplay> <source src="{{ .DatasgameBlindTest.Track.PreviewURL }}" type="audio/mpeg"> </audio>
+            <audio id="track" autoplay> <source src="{{ .MediasBlindtest.DatasgameBlindTest.Track.PreviewURL }}" type="audio/mpeg"> </audio>
         </div>
 
          <div class="container">
@@ -61,7 +61,7 @@
         <div class="divParoles">
             Chat message🖊
             <br>
-            {{range $index, $message := .Info}}
+            {{range $index, $message := .MediasBlindtest.Info}}
             {{$message.Username}}: {{$message.TextMessage}}<button class="DeleteBtn" type="submit" name="action" value="DeleteMessage">🗑</button>
             <input type="hidden" name="messageIndex" value="{{$index}}">
             {{end}}

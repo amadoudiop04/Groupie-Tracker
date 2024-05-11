@@ -43,6 +43,7 @@ func InitTable(database string) *sql.DB {
 					id INTEGER PRIMARY KEY,
 					name TEXT NOT NULL
 				);
+				
 				CREATE TABLE IF NOT EXISTS GAME_ROOM (
 					id_room INTEGER PRIMARY KEY,
 					number_of_game_turns INTEGER,
