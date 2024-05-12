@@ -122,6 +122,8 @@ func main() {
 	http.HandleFunc("/UserProfileHandler", UserProfileHandler)
 	http.HandleFunc("/BlindtestLandingPage", BlindtestLandingPage)
 	http.HandleFunc("/Blindtest", Blindtest)
+	http.HandleFunc("/BlindtestRoom", BlindtestRoom)
+	http.HandleFunc("/BlindtestRoomHandler", BlindtestRoomHandler)
 	http.HandleFunc("/PublicBlindtest", JoinPublicBlindtest)
 	http.HandleFunc("/CreateBlindtest", CreateBlindtest)
 	http.HandleFunc("/CreateBlindtestHandler", CreateBlindtestHandler)
@@ -507,7 +509,7 @@ func Blindtest(w http.ResponseWriter, r *http.Request) {
 
 	userID, _ := strconv.Atoi(cookie.Value)
 
-	roomID, err := database.GetRoomIDByUserID(userID)
+	roomID := database.GetRoomIDByUserID(userID)
 	if err != nil {
 		fmt.Println("l'utilisateur n'est associé à aucune room")
 	}
@@ -518,19 +520,119 @@ func Blindtest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//Game
-	w.Header().Set("Refresh", strconv.Itoa(roomData.BlindtestTimeOfMusic+roomData.BlindtestTimeToAnswer))
-	tracks := games.Api("6Xf0gjt1YmwvEG5iS8QOfg?si=2de553d01ff84abb")
-	tracks = games.RemovePlayedTracks(tracks)
-	currentTrack := games.NextTrack(tracks)
+	if userID == database.GetRoomCreator(roomID) {
+		w.Header().Set("Refresh", strconv.Itoa(roomData.BlindtestTimeOfMusic+roomData.BlindtestTimeToAnswer))
+		tracks := games.Api("6Xf0gjt1YmwvEG5iS8QOfg?si=2de553d01ff84abb")
+		tracks = games.RemovePlayedTracks(tracks)
+		currentTrack := games.NextTrack(tracks)
 
-	if currentTrack == nil {
-		http.Redirect(w, r, "/EndBlindtest", http.StatusSeeOther)
+		if currentTrack == nil {
+			http.Redirect(w, r, "/EndBlindtest", http.StatusSeeOther)
+		}
+
+		games.PlayedTracks = append(games.PlayedTracks, currentTrack)
+
+		trackData := games.PageData{
+			Track: currentTrack,
+		}
+
+		mediasBlindtest := Data{
+			DatasgameBlindTest: trackData,
+			Info:               messages,
+		}
+
+		//Data
+		data := struct {
+			MediasBlindtest  Data
+			DurationOfMusic  int
+			DurationOfAnswer int
+		}{
+			MediasBlindtest:  mediasBlindtest,
+			DurationOfMusic:  roomData.BlindtestTimeOfMusic,
+			DurationOfAnswer: roomData.BlindtestTimeToAnswer,
+		}
+
+		//Ici, recolter les données et les envoyer par websocket à tous les joueurs présents dans la room
+
+		//Execute html
+		renderTemplate(w, "BlindTest/index.html", data)
+
+	} else {
+		//Ici, récolter les données reçues par websocket et les enregistrées dans data
+		data := struct {
+			MediasBlindtest  Data
+			DurationOfMusic  int
+			DurationOfAnswer int
+		}{}
+		renderTemplate(w, "BlindTest/index.html", data)
 	}
 
-	games.PlayedTracks = append(games.PlayedTracks, currentTrack)
+	//Online chat
+	if r.Method == "POST" {
+		action := r.FormValue("action")
+		if action == "ChatMessage" {
+			message := r.Form.Get("Message")
+			ChatDiscours = message
+			messages = append(messages, Message{
+				Username:    Pseudo,
+				TextMessage: ChatDiscours,
+			})
 
-	trackData := games.PageData{
-		Track: currentTrack,
+			jsonMessage, err := json.Marshal(messages[len(messages)-1])
+			if err != nil {
+				fmt.Println("Error marshaling message to JSON:", err)
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				return
+			}
+
+			broadcast <- Message{
+				Username:    Pseudo,
+				TextMessage: string(jsonMessage),
+			}
+		}
+		if action == "DeleteMessage" {
+			indexStr := r.Form.Get("messageIndex")
+			index, err := strconv.Atoi(indexStr)
+			if err != nil {
+				http.Error(w, "Invalid message index", http.StatusBadRequest)
+				return
+			}
+			if index < 0 || index >= len(messages) {
+				http.Error(w, "Invalid message index", http.StatusBadRequest)
+				return
+			}
+			messages = append(messages[:index], messages[index+1:]...)
+		}
+	}
+}
+
+func BlindtestRoom(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("session_id")
+	if err != nil {
+		http.Redirect(w, r, "/Login", http.StatusSeeOther)
+		return
+	}
+
+	userID, _ := strconv.Atoi(cookie.Value)
+	roomID := database.GetRoomIDByUserID(userID)
+	creatorID := database.GetRoomCreator(roomID)
+
+	mediasBlindtest := Data{Info: messages}
+
+	data := struct {
+		ButtonVisible   bool
+		MediasBlindtest Data
+		RoomID          int
+		PlayerNumber    int
+	}{
+		ButtonVisible:   false,
+		MediasBlindtest: mediasBlindtest,
+		RoomID:          roomID,
+		PlayerNumber:    database.GetNumberOfPlayer(roomID),
+	}
+
+	if userID == creatorID {
+		data.ButtonVisible = true
 	}
 
 	//Online chat
@@ -571,42 +673,15 @@ func Blindtest(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	mediasBlindtest := Data{
-		DatasgameBlindTest: trackData,
-		Info:               messages,
-	}
-
-	//Data
-	data := struct {
-		MediasBlindtest  Data
-		DurationOfMusic  int
-		DurationOfAnswer int
-	}{
-		MediasBlindtest:  mediasBlindtest,
-		DurationOfMusic:  roomData.BlindtestTimeOfMusic,
-		DurationOfAnswer: roomData.BlindtestTimeToAnswer,
-	}
-
 	//Execute html
-	renderTemplate(w, "BlindTest/index.html", data)
+	renderTemplate(w, "BlindTest/Room.html", data)
+}
+
+func BlindtestRoomHandler(w http.ResponseWriter, r *http.Request) {
+
 }
 
 func JoinPublicBlindtest(w http.ResponseWriter, r *http.Request) {
-	db := database.InitTable("ROOMS")
-	defer db.Close()
-
-	roomID := 1
-	createdBy := 0
-	maxPlayers := 1
-	name := "publicBlindtest"
-	gameID := 1
-
-	// Create the public room
-	_, err := db.Exec("INSERT INTO ROOMS (id, created_by, max_player, name, id_game) VALUES (?, ?, ?, ?, ?)", roomID, createdBy, maxPlayers, name, gameID)
-	if err != nil {
-		log.Println("Error creating room:", err)
-	}
-
 	cookie, err := r.Cookie("session_id")
 	if err != nil {
 		http.Redirect(w, r, "/Login", http.StatusSeeOther)
@@ -614,22 +689,40 @@ func JoinPublicBlindtest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userID, _ := strconv.Atoi(cookie.Value)
+	roomID := 1
 
-	database.JoinRoom(userID, roomID)
+	fmt.Println(database.CheckRoomExistence(roomID))
+	if !database.CheckRoomExistence(roomID) {
+		db := database.InitTable("ROOMS")
+		defer db.Close()
 
-	//Room Data
-	gameRoomDB := database.InitTable("GAME_ROOM")
-	defer gameRoomDB.Close()
+		createdBy := userID
+		maxPlayers := 50
+		name := "publicBlindtest"
+		gameID := 1
 
-	numberOfGameTurns := 10
-	timeOfMusic := 10
-	timeToAnswer := 5
+		// Create the public room
+		_, err := db.Exec("INSERT INTO ROOMS (id, created_by, max_player, number_of_player, name, id_game) VALUES (?, ?, ?, ?, ?, ?)", roomID, createdBy, maxPlayers, 0, name, gameID)
+		if err != nil {
+			log.Println("Error creating room:", err)
+		}
 
-	_, err = gameRoomDB.Exec("INSERT INTO GAME_ROOM (id_room, number_of_game_turns, blindtest_time_of_music, blindtest_time_to_answer) VALUES (?, ?, ?, ?)", roomID, numberOfGameTurns, timeOfMusic, timeToAnswer)
-	if err != nil {
-		log.Println("Error creating game room:", err)
-		return
+		//Room Data
+		gameRoomDB := database.InitTable("GAME_ROOM")
+		defer gameRoomDB.Close()
+
+		numberOfGameTurns := 10
+		timeOfMusic := 10
+		timeToAnswer := 5
+
+		_, err = gameRoomDB.Exec("INSERT INTO GAME_ROOM (id_room, number_of_game_turns, blindtest_time_of_music, blindtest_time_to_answer) VALUES (?, ?, ?, ?)", roomID, numberOfGameTurns, timeOfMusic, timeToAnswer)
+		if err != nil {
+			log.Println("Error creating game room:", err)
+			return
+		}
 	}
+
+	database.JoinRoom(roomID, userID)
 
 	http.Redirect(w, r, "/Blindtest", http.StatusSeeOther)
 }
@@ -668,7 +761,7 @@ func CreateBlindtestHandler(w http.ResponseWriter, r *http.Request) {
 
 	database.CreateBlindtestRoom(userID, maxPlayer, roomName, gameID, gameTurns, musicDuration, answerDuration)
 
-	http.Redirect(w, r, "/Blindtest", http.StatusSeeOther)
+	http.Redirect(w, r, "/BlindtestRoom", http.StatusSeeOther)
 }
 
 func JoinPrivateBlindtest(w http.ResponseWriter, r *http.Request) {

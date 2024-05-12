@@ -24,6 +24,7 @@ func InitTable(database string) *sql.DB {
 					id INTEGER PRIMARY KEY,
 					created_by INTEGER NOT NULL,
 					max_player INTEGER NOT NULL,
+					number_of_player INTEGER NOT NULL,
 					name TEXT NOT NULL,
 					id_game INTEGER,
 					FOREIGN KEY (created_by) REFERENCES USER(id),

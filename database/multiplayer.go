@@ -36,7 +36,7 @@ func CreateRoom(createdBy int, maxPlayers int, name string, gameID int) int {
 	}
 
 	// Créer la room avec l'ID déterminé
-	_, err := db.Exec("INSERT INTO ROOMS (id, created_by, max_player, name, id_game) VALUES (?, ?, ?, ?, ?)", roomID, createdBy, maxPlayers, name, gameID)
+	_, err := db.Exec("INSERT INTO ROOMS (id, created_by, max_player, number_of_player, name, id_game) VALUES (?, ?, ?, ?, ?, ?)", roomID, createdBy, maxPlayers, 0, name, gameID)
 	if err != nil {
 		log.Println("Error creating room:", err)
 	}
@@ -92,10 +92,31 @@ func CreateGuessthesongRoom(db *sql.DB, createdBy int, maxPlayers int, name stri
 }
 
 func JoinRoom(roomID int, userID int) error {
+	//ROOM_USERS
 	db := InitTable("ROOM_USERS")
 	defer db.Close()
 
 	_, err := db.Exec("INSERT INTO ROOM_USERS (id_room, id_user) VALUES (?, ?)", roomID, userID)
+	if err != nil {
+		log.Println("Error joining room:", err)
+		return err
+	}
+
+	//ROOMS
+	roomDB := InitTable("ROOMS")
+	defer roomDB.Close()
+
+	var playerCount int
+	row := roomDB.QueryRow("SELECT number_of_player FROM ROOMS WHERE id = ?", roomID)
+	err = row.Scan(&playerCount)
+	if err != nil {
+		log.Println("Error counting players in room:", err)
+		return err
+	}
+
+	playerCount++
+
+	_, err = roomDB.Exec("UPDATE ROOMS SET number_of_player = ? WHERE id = ?", playerCount, roomID)
 	if err != nil {
 		log.Println("Error joining room:", err)
 		return err
@@ -156,20 +177,64 @@ func GetRoomDetails(db *sql.DB, roomID int) (Room, error) {
 	return room, nil
 }
 
-func GetRoomIDByUserID(userID int) (int, error) {
+func GetRoomIDByUserID(userID int) int {
 	db := InitTable("ROOM_USERS")
 	defer db.Close()
 
 	var roomID int
 	err := db.QueryRow("SELECT id_room FROM ROOM_USERS WHERE id_user = ?", userID).Scan(&roomID)
 	if err != nil {
-		fmt.Println(err)
 		if err == sql.ErrNoRows {
-			return 0, errors.New("No room found for the user")
+			fmt.Println("No room found for the user")
 		}
-		return 0, err
+		log.Fatal(err)
 	}
-	return roomID, nil
+	return roomID
+}
+
+func GetRoomCreator(roomID int) int {
+	db := InitTable("ROOMS")
+	defer db.Close()
+
+	var creatorID int
+	err := db.QueryRow("SELECT created_by FROM ROOMS WHERE id = ?", roomID).Scan(&creatorID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			fmt.Println("No room found for the user")
+		}
+		log.Fatal(err)
+	}
+	return creatorID
+}
+
+func CheckRoomExistence(roomID int) bool {
+	db := InitTable("ROOMS")
+	defer db.Close()
+
+	var count int
+	row := db.QueryRow("SELECT COUNT(*) FROM ROOMS WHERE id = ?", roomID)
+	err := row.Scan(&count)
+	if err != nil {
+		log.Println("Error checking room existence:", err)
+		return false
+	}
+
+	return count > 0
+}
+
+func GetNumberOfPlayer(roomID int) int {
+	db := InitTable("ROOMS")
+	defer db.Close()
+
+	var numberOfPlayer int
+	err := db.QueryRow("SELECT number_of_player FROM ROOMS WHERE id = ?", roomID).Scan(&numberOfPlayer)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			fmt.Println("No room found for the user")
+		}
+		log.Fatal(err)
+	}
+	return numberOfPlayer
 }
 
 // ---------------------------ROOM_USERS---------------------------\\
