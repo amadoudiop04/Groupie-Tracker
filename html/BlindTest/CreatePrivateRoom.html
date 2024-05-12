@@ -7,23 +7,37 @@
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400..700&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/static/css/blindTest.css">
+    <link rel="stylesheet" href="/static/css/privateRoom.css">
     <title>Groupie Tracker - Blind Test</title>
 </head>
 
 <body>
+
     <h1 class="title-top">Blind Test</h1>
-    
-    <form id="CreateRoom" action="/CreateBlindtestHandler" method="post">
-        <input type="text" name="roomName" placeholder="Nom de votre serveur" required>
-        <input type="number" name="maxPlayer" placeholder="Nombre de joueur maximum" required>
-        <input type="number" name="gameTurns" placeholder="Nombre de tours">
-        <input type="number" name="musicDuration" placeholder="Durée des extraits (en secondes)">
-        <input type="number" name="answerDuration" placeholder="Temps de réponse après la fin de la musique (en secondes)">
-        <button type="submit">Valider</button>
-    </form>
-    <p>Les données non remplies seront automatiquement attribuées.</p>
-        
+    <p class="info"> Les données non remplies seront automatiquement attribués. </p>
+
+    <div class="container">
+        <form id="CreateRoom" action="/CreateBlindtestHandler" method="post">
+            <input class="defRules" type="text" name="roomName" placeholder="Nom de votre serveur" required>
+            <input class="defRules" type="number" name="maxPlayer" placeholder="Nombre de joueur maximum" required>
+            <input class="defRules" type="number" name="gameTurns" placeholder="Nombre de tours">
+            <input class="defRules" type="number" name="musicDuration" placeholder="Durée des extraits (en secondes)">
+            <input class="defRules" type="number" name="answerDuration"
+                placeholder="Temps de réponse aprés la fin de la musique (en secondes)">
+            <button class="btnDef" type="submit">Valider</button>
+        </form>
+    </div>
+
+    <div class="rules">
+      Pensez à bien définir les nombres tours et caractéristiques essentiels pour le bon fonctionnement de votre jeu !
+      <br>
+      Merci et bon jeu ❗😊
+    </div>
+
 </body>
 
 </html>
+
+
+
+

@@ -1,0 +1,47 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background: rgb(39, 38, 38);
+    color: #333;
+    height: 100%;
+    overflow: hidden;
+}
+
+.title-top{
+    color: aliceblue;
+    display: flex;
+    justify-content: center;
+    font-family: "Dancing Script", cursive;
+    font-optical-sizing: auto;
+    font-weight: 400;
+    font-style: normal;
+}
+
+.title-top-2{
+    color: aliceblue;
+    display: flex;
+    justify-content: center;
+    font-size: 2em;
+    font-family: 'Times New Roman', Times, serif;
+}
+
+.container{
+    background: linear-gradient(to bottom right,#50ffd3,#6A5ACD);
+    transform: translateX(50%);
+    display: flex;
+    justify-content: center;
+    border: solid 3px rgb(113, 110, 110);
+    border-radius: 10px;
+    align-items: center;
+    height: 50px;
+    width: 50%;
+}
+
+.myInput,.myBtn{
+    border-radius: 10px;
+}
+
+.myBtn{
+   background-color: green;
+}

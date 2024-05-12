@@ -41,6 +41,7 @@ type Data struct {
 type Message struct {
 	Username    string
 	TextMessage string
+	GamesDatas  string
 }
 
 var clients = make(map[*websocket.Conn]bool)
@@ -69,7 +70,6 @@ func websocketHandler(w http.ResponseWriter, r *http.Request) {
 			mutex.Unlock()
 			return
 		}
-
 		broadcast <- msg
 	}
 }
@@ -553,7 +553,16 @@ func Blindtest(w http.ResponseWriter, r *http.Request) {
 		}
 
 		//Ici, recolter les données et les envoyer par websocket à tous les joueurs présents dans la room
+		jsonData, err := json.Marshal(data)
+		if err != nil {
+			fmt.Println("Error marshaling message to JSON:", err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
 
+		broadcast <- Message{
+			GamesDatas: string(jsonData),
+		}
 		//Execute html
 		renderTemplate(w, "BlindTest/index.html", data)
 
