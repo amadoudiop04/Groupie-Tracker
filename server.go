@@ -496,6 +496,21 @@ func UserProfileHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func BlindtestLandingPage(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("session_id")
+	if err != nil {
+		http.Redirect(w, r, "/Login", http.StatusSeeOther)
+		return
+	}
+
+	userID, _ := strconv.Atoi(cookie.Value)
+
+	roomID, err := database.GetRoomIDByUserID(userID)
+	//If the user is associate to a room, we have to make him leave
+	if err == nil {
+		database.LeaveRoom(roomID, userID)
+		fmt.Println("user is leaving the room")
+	}
+
 	renderTemplate(w, "BlindTest/LandingPage.html", nil)
 }
 
@@ -509,14 +524,52 @@ func Blindtest(w http.ResponseWriter, r *http.Request) {
 
 	userID, _ := strconv.Atoi(cookie.Value)
 
-	roomID := database.GetRoomIDByUserID(userID)
+	roomID, err := database.GetRoomIDByUserID(userID)
 	if err != nil {
-		fmt.Println("l'utilisateur n'est associé à aucune room")
+		http.Redirect(w, r, "/JoinBlindtest", http.StatusSeeOther)
 	}
 
 	roomData, err := database.GetRoomData(roomID)
 	if err != nil {
 		fmt.Println("La room n'est associée à aucune données")
+	}
+
+	//Online chat
+	if r.Method == "POST" {
+		action := r.FormValue("action")
+		if action == "ChatMessage" {
+			message := r.Form.Get("Message")
+			ChatDiscours = message
+			messages = append(messages, Message{
+				Username:    Pseudo,
+				TextMessage: ChatDiscours,
+			})
+
+			jsonMessage, err := json.Marshal(messages[len(messages)-1])
+			if err != nil {
+				fmt.Println("Error marshaling message to JSON:", err)
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				return
+			}
+
+			broadcast <- Message{
+				Username:    Pseudo,
+				TextMessage: string(jsonMessage),
+			}
+		}
+		if action == "DeleteMessage" {
+			indexStr := r.Form.Get("messageIndex")
+			index, err := strconv.Atoi(indexStr)
+			if err != nil {
+				http.Error(w, "Invalid message index", http.StatusBadRequest)
+				return
+			}
+			if index < 0 || index >= len(messages) {
+				http.Error(w, "Invalid message index", http.StatusBadRequest)
+				return
+			}
+			messages = append(messages[:index], messages[index+1:]...)
+		}
 	}
 
 	//Game
@@ -575,44 +628,6 @@ func Blindtest(w http.ResponseWriter, r *http.Request) {
 		}{}
 		renderTemplate(w, "BlindTest/index.html", data)
 	}
-
-	//Online chat
-	if r.Method == "POST" {
-		action := r.FormValue("action")
-		if action == "ChatMessage" {
-			message := r.Form.Get("Message")
-			ChatDiscours = message
-			messages = append(messages, Message{
-				Username:    Pseudo,
-				TextMessage: ChatDiscours,
-			})
-
-			jsonMessage, err := json.Marshal(messages[len(messages)-1])
-			if err != nil {
-				fmt.Println("Error marshaling message to JSON:", err)
-				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-				return
-			}
-
-			broadcast <- Message{
-				Username:    Pseudo,
-				TextMessage: string(jsonMessage),
-			}
-		}
-		if action == "DeleteMessage" {
-			indexStr := r.Form.Get("messageIndex")
-			index, err := strconv.Atoi(indexStr)
-			if err != nil {
-				http.Error(w, "Invalid message index", http.StatusBadRequest)
-				return
-			}
-			if index < 0 || index >= len(messages) {
-				http.Error(w, "Invalid message index", http.StatusBadRequest)
-				return
-			}
-			messages = append(messages[:index], messages[index+1:]...)
-		}
-	}
 }
 
 func BlindtestRoom(w http.ResponseWriter, r *http.Request) {
@@ -623,8 +638,13 @@ func BlindtestRoom(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userID, _ := strconv.Atoi(cookie.Value)
-	roomID := database.GetRoomIDByUserID(userID)
+	roomID, err := database.GetRoomIDByUserID(userID)
+	if err != nil {
+		http.Redirect(w, r, "/JoinBlindtest", http.StatusSeeOther)
+	}
+
 	creatorID := database.GetRoomCreator(roomID)
+	numberOfPlayer := database.GetNumberOfPlayer(roomID)
 
 	mediasBlindtest := Data{Info: messages}
 
@@ -637,7 +657,7 @@ func BlindtestRoom(w http.ResponseWriter, r *http.Request) {
 		ButtonVisible:   false,
 		MediasBlindtest: mediasBlindtest,
 		RoomID:          roomID,
-		PlayerNumber:    database.GetNumberOfPlayer(roomID),
+		PlayerNumber:    numberOfPlayer,
 	}
 
 	if userID == creatorID {
@@ -700,7 +720,6 @@ func JoinPublicBlindtest(w http.ResponseWriter, r *http.Request) {
 	userID, _ := strconv.Atoi(cookie.Value)
 	roomID := 1
 
-	fmt.Println(database.CheckRoomExistence(roomID))
 	if !database.CheckRoomExistence(roomID) {
 		db := database.InitTable("ROOMS")
 		defer db.Close()
@@ -774,6 +793,21 @@ func CreateBlindtestHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func JoinPrivateBlindtest(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("session_id")
+	if err != nil {
+		http.Redirect(w, r, "/Login", http.StatusSeeOther)
+		return
+	}
+
+	userID, _ := strconv.Atoi(cookie.Value)
+
+	roomID, err := database.GetRoomIDByUserID(userID)
+	//If the user is associate to a room, we have to make him leave
+	if err == nil {
+		database.LeaveRoom(roomID, userID)
+		fmt.Println("user is leaving the room")
+	}
+
 	renderTemplate(w, "BlindTest/JoinPrivateRoom.html", nil)
 }
 
@@ -793,7 +827,7 @@ func JoinBlindtestHandler(w http.ResponseWriter, r *http.Request) {
 		renderTemplate(w, "BlindTest/JoinPrivateRoom.html", data)
 	} else {
 		database.JoinRoom(roomID, userID)
-		http.Redirect(w, r, "/Blindtest", http.StatusSeeOther)
+		http.Redirect(w, r, "/BlindtestRoom", http.StatusSeeOther)
 	}
 }
 

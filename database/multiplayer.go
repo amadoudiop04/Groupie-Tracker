@@ -118,7 +118,7 @@ func JoinRoom(roomID int, userID int) error {
 
 	_, err = roomDB.Exec("UPDATE ROOMS SET number_of_player = ? WHERE id = ?", playerCount, roomID)
 	if err != nil {
-		log.Println("Error joining room:", err)
+		log.Println("Error update number of player in the room :", err)
 		return err
 	}
 	return nil
@@ -131,8 +131,36 @@ func LeaveRoom(roomID int, userID int) error {
 	_, err := db.Exec("DELETE FROM ROOM_USERS WHERE id_room = ? AND id_user = ?", roomID, userID)
 	if err != nil {
 		log.Println("Error leaving room:", err)
+		return err
 	}
-	return err
+
+	roomDB := InitTable("ROOMS")
+	defer roomDB.Close()
+
+	var playerCount int
+	row := roomDB.QueryRow("SELECT number_of_player FROM ROOMS WHERE id = ?", roomID)
+	err = row.Scan(&playerCount)
+	if err != nil {
+		log.Println("Error counting players in room:", err)
+		return err
+	}
+
+	playerCount--
+
+	if playerCount == 0 {
+		_, err = roomDB.Exec("DELETE FROM ROOMS WHERE id = ?", roomID)
+		if err != nil {
+			log.Println("Error update number of player in the room :", err)
+			return err
+		}
+	} else {
+		_, err = roomDB.Exec("UPDATE ROOMS SET number_of_player = ? WHERE id = ?", playerCount, roomID)
+		if err != nil {
+			log.Println("Error update number of player in the room :", err)
+			return err
+		}
+	}
+	return nil
 }
 
 func VerifyRoom(roomID int) bool {
@@ -177,7 +205,7 @@ func GetRoomDetails(db *sql.DB, roomID int) (Room, error) {
 	return room, nil
 }
 
-func GetRoomIDByUserID(userID int) int {
+func GetRoomIDByUserID(userID int) (int, error) {
 	db := InitTable("ROOM_USERS")
 	defer db.Close()
 
@@ -187,9 +215,9 @@ func GetRoomIDByUserID(userID int) int {
 		if err == sql.ErrNoRows {
 			fmt.Println("No room found for the user")
 		}
-		log.Fatal(err)
+		return 0, err
 	}
-	return roomID
+	return roomID, nil
 }
 
 func GetRoomCreator(roomID int) int {
