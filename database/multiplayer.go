@@ -68,7 +68,7 @@ func CreatePetitbacRoom(createdBy int, maxPlayers int, name string, gameID int, 
 	defer gameRoomDB.Close()
 
 	// Insérer les données dans la table GAME_ROOM
-	_, err := gameRoomDB.Exec("INSERT INTO GAME_ROOM (id_room, number_of_game_turns, petitbac_categories, petitbac_time_to_answer) VALUES (?, ?, ?, ?)", roomID, numberOfGameTurns, categories, timeToAnswer)
+	_, err := gameRoomDB.Exec("INSERT INTO GAME_ROOM (id_room, game_state, number_of_game_turns, petitbac_categories, petitbac_time_to_answer) VALUES (?, ?, ?, ?, ?)", roomID, false, numberOfGameTurns, categories, timeToAnswer)
 	if err != nil {
 		log.Println("Error creating game room:", err)
 		return
@@ -83,7 +83,7 @@ func CreateGuessthesongRoom(createdBy int, maxPlayers int, name string, gameID i
 	defer gameRoomDB.Close()
 
 	// Insérer les données dans la table GAME_ROOM
-	_, err := gameRoomDB.Exec("INSERT INTO GAME_ROOM (id_room, game_state, number_of_game_turns, guessthesong_difficulty, guessthesong_time_to_answer) VALUES (?, ?, ?, ?, ?)", roomID, 0, numberOfGameTurns, difficulty, timeToAnswer)
+	_, err := gameRoomDB.Exec("INSERT INTO GAME_ROOM (id_room, game_state, number_of_game_turns, guessthesong_difficulty, guessthesong_time_to_answer) VALUES (?, ?, ?, ?, ?)", roomID, false, numberOfGameTurns, difficulty, timeToAnswer)
 	if err != nil {
 		log.Println("Error creating game room:", err)
 		return
@@ -213,7 +213,7 @@ func GetRoomCreator(roomID int) int {
 		if err == sql.ErrNoRows {
 			fmt.Println("No room found for the user")
 		}
-		log.Fatal(err)
+		fmt.Println(err)
 	}
 	return creatorID
 }
@@ -253,7 +253,7 @@ func GetNumberOfPlayer(roomID int) int {
 		if err == sql.ErrNoRows {
 			fmt.Println("No room found for the user")
 		}
-		log.Fatal(err)
+		fmt.Println(err)
 	}
 	return numberOfPlayer
 }
@@ -392,6 +392,6 @@ func UpdateGameData(data GameRoomData, roomID int) {
 		roomID,
 	)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
 	}
 }

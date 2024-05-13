@@ -20,7 +20,7 @@ func Api(ID string) []*spotify.SimpleTrack {
 
 	accessToken, err := authConfig.Token(context.Background())
 	if err != nil {
-		log.Fatalf("error retrieving access token: %v", err)
+		log.Printf("error retrieving access token: %v", err)
 	}
 
 	client := spotify.Authenticator{}.NewClient(accessToken)
@@ -28,7 +28,7 @@ func Api(ID string) []*spotify.SimpleTrack {
 	playlistID := spotify.ID(ID)
 	playlist, err := client.GetPlaylist(playlistID)
 	if err != nil {
-		log.Fatalf("error retrieving playlist data: %v", err)
+		log.Printf("error retrieving playlist data: %v", err)
 	}
 
 	var tracks []*spotify.SimpleTrack

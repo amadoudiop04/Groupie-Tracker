@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"fmt"
-	"log"
 	"math/rand"
 	"regexp"
 	"strings"
@@ -55,7 +54,7 @@ func UniqueEmail(email string) bool {
 		var userEmail string
 		err := rowsUsers.Scan(&userEmail)
 		if err != nil {
-			log.Fatal(err)
+			fmt.Println(err)
 		}
 		if userEmail == email {
 			return false
@@ -75,7 +74,7 @@ func UniqueUsername(username string) bool {
 		var userPseudo string
 		err := rowsUsers.Scan(&userPseudo)
 		if err != nil {
-			log.Fatal(err)
+			fmt.Println(err)
 		}
 		if userPseudo == username {
 			return false
@@ -109,7 +108,7 @@ func DisplayUserTable(rows *sql.Rows) {
 		var users User
 		err := rows.Scan(&users.Id, &users.Pseudo, &users.Email, &users.Password, &users.recoveryCode)
 		if err != nil {
-			log.Fatal(err)
+			fmt.Println(err)
 		}
 		fmt.Println(users)
 	}

@@ -944,6 +944,21 @@ func EndBlindtest(w http.ResponseWriter, r *http.Request) {
 }
 
 func GuessTheSongLandingPage(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("session_id")
+	if err != nil {
+		http.Redirect(w, r, "/Login", http.StatusSeeOther)
+		return
+	}
+
+	userID, _ := strconv.Atoi(cookie.Value)
+
+	roomID, err := database.GetRoomIDByUserID(userID)
+	//If the user is associate to a room, we have to make him leave
+	if err == nil {
+		database.LeaveRoom(roomID, userID)
+		fmt.Println("user is leaving the room")
+	}
+
 	renderTemplate(w, "GuessTheSong/LandingPage.html", nil)
 }
 
@@ -1373,6 +1388,21 @@ func BlindtestRules(w http.ResponseWriter, r *http.Request) {
 }
 
 func PetitBacLandingPage(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("session_id")
+	if err != nil {
+		http.Redirect(w, r, "/Login", http.StatusSeeOther)
+		return
+	}
+
+	userID, _ := strconv.Atoi(cookie.Value)
+
+	roomID, err := database.GetRoomIDByUserID(userID)
+	//If the user is associate to a room, we have to make him leave
+	if err == nil {
+		database.LeaveRoom(roomID, userID)
+		fmt.Println("user is leaving the room")
+	}
+
 	renderTemplate(w, "PetitBac/LandingPage.html", nil)
 }
 
@@ -1506,6 +1536,7 @@ func PetitBac(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Refresh", strconv.Itoa(gameData.PetitbacTimeToAnswer))
 		letters := "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 		randomLetter := string(letters[rand.Intn(len(letters))])
+		fmt.Println(gameData)
 
 		if games.PetitBacData.NumberOfTurn == -1 {
 			games.PetitBacData.NumberOfTurn = gameData.NumberOfGameTurns
@@ -1519,13 +1550,6 @@ func PetitBac(w http.ResponseWriter, r *http.Request) {
 		userData, _ := database.GetUserData(strconv.Itoa(userID))
 		userScore := database.GetUserScore(roomID, userID)
 
-		if r.Method == "POST" {
-			response := r.FormValue("BlindtestResponse")
-			if games.NormalizeString(response) == games.NormalizeString(games.PlayedTracks[len(games.PlayedTracks)-2].Name) {
-				userScore++
-				database.SetUserScore(roomID, userID, userScore)
-			}
-		}
 		if r.Method == "POST" {
 			response := r.FormValue("action")
 			if response == "true" {
@@ -1747,7 +1771,7 @@ func CreatePetitBacHandler(w http.ResponseWriter, r *http.Request) {
 	sessionID := cookie.Value
 
 	userID, _ := strconv.Atoi(sessionID)
-	gameID := 1
+	gameID := 3
 
 	database.CreatePetitbacRoom(userID, maxPlayer, roomName, gameID, gameTurns, strings.Join(categories, ", "), answerDuration)
 

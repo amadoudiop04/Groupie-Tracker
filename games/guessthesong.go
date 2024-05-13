@@ -39,7 +39,7 @@ func ApiTrack() *spotify.FullTrack {
 
 	accessToken, err := authConfig.Token(context.Background())
 	if err != nil {
-		log.Fatalf("error retrieve access token: %v", err)
+		log.Printf("error retrieve access token: %v", err)
 	}
 
 	client := spotify.Authenticator{}.NewClient(accessToken)
@@ -48,7 +48,7 @@ func ApiTrack() *spotify.FullTrack {
 	playlist, err := client.GetPlaylist(playlistID)
 	MyPlaylist = playlist
 	if err != nil {
-		log.Fatalf("error retrieve playlist data: %v", err)
+		log.Printf("error retrieve playlist data: %v", err)
 	}
 
 	for {
