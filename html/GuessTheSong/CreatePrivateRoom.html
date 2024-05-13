@@ -8,22 +8,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/static/css/privateRoom.css">
-    <title>Groupie Tracker - Blind Test</title>
+    <title>Groupie Tracker - Guess the song</title>
 </head>
 
 <body>
 
-    <h1 class="title-top">Blind Test</h1>
+    <h1 class="title-top">Guess the song</h1>
     <p class="info"> Les données non remplies seront automatiquement attribués. </p>
 
     <div class="container">
-        <form id="CreateRoom" action="/CreateBlindtestHandler" method="post">
+        <form id="CreateRoom" action="/CreateGuessTheSongHandler" method="post">
             <input class="defRules" type="text" name="roomName" placeholder="Nom de votre serveur" required>
             <input class="defRules" type="number" name="maxPlayer" placeholder="Nombre de joueur maximum" required>
             <input class="defRules" type="number" name="gameTurns" placeholder="Nombre de tours">
-            <input class="defRules" type="number" name="musicDuration" placeholder="Durée des extraits">
+            <select class="defRules" name="difficulty" required>
+                <option value="facile">Facile</option>
+                <option value="moyen">Moyen</option>
+                <option value="difficile">Difficile</option>
+            </select>            
             <input class="defRules" type="number" name="answerDuration"
-                placeholder="Temps de réponse après l'extrait">
+                placeholder="Temps de réponse">
             <button class="btnDef" type="submit">Valider</button>
         </form>
     </div>

@@ -8,11 +8,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/static/css/blindTest.css">
-    <title>Groupie Tracker - Blind Test</title>
+    <title>Groupie Tracker - Guess the song</title>
 </head>
 
 <body>
-    <h1 class="title-top">Blind Test</h1>
+    <h1 class="title-top">Guess the song</h1>
 
     <div class="container-block">
         <div class="audioContainer">
@@ -29,7 +29,7 @@
         </div>
       
         {{if .ButtonVisible}}
-        <form action="/BlindtestRoomHandler" method="post">
+        <form action="/GuessTheSongRoomHandler" method="post">
             <button  class="mybtn" type="submit" name="action" value="BlindTest">Démarrer le jeu</button>
         </form>
         {{else}}
@@ -38,7 +38,7 @@
     </div>
 
     <div class="lyrics">
-        <form action="/Blindtest" method="post" style="display: inline;">
+        <form action="/GuessTheSong" method="post" style="display: inline;">
         <div class="divParoles">
             Chat message🖊
             <br>

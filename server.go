@@ -77,7 +77,6 @@ func websocketHandler(w http.ResponseWriter, r *http.Request) {
 func handleMessages() {
 	for {
 		msg := <-broadcast
-		log.Println(msg)
 		mutex.Lock()
 		for client := range clients {
 			err := client.WriteJSON(msg)
@@ -133,12 +132,24 @@ func main() {
 	http.HandleFunc("/BlindtestRules", BlindtestRules)
 	http.HandleFunc("/GuessTheSongLandingPage", GuessTheSongLandingPage)
 	http.HandleFunc("/GuessTheSong", GuessTheSong)
-	http.HandleFunc("/GuessTheSongLose", GuessTheSongLose)
-	http.HandleFunc("/GuessTheSongWin", GuessTheSongWin)
+	http.HandleFunc("/GuessTheSongRoom", GuessTheSongRoom)
+	http.HandleFunc("/GuessTheSongRoomHandler", GuessTheSongRoomHandler)
+	http.HandleFunc("/PublicGuessTheSong", JoinPublicGuessTheSong)
+	http.HandleFunc("/CreateGuessTheSong", CreateGuessTheSong)
+	http.HandleFunc("/CreateGuessTheSongHandler", CreateGuessTheSongHandler)
+	http.HandleFunc("/JoinGuessTheSong", JoinPrivateGuessTheSong)
+	http.HandleFunc("/JoinGuessTheSongHandler", JoinGuessTheSongHandler)
 	http.HandleFunc("/GuessTheSongRules", GuessTheSongRules)
 	http.HandleFunc("/PetitBacLandingPage", PetitBacLandingPage)
 	http.HandleFunc("/PetitBac", PetitBac)
 	http.HandleFunc("/PetitBacHandler", PetitBacHandler)
+	http.HandleFunc("/PetitBacRoom", PetitBacRoom)
+	http.HandleFunc("/PetitBacRoomHandler", PetitBacRoomHandler)
+	http.HandleFunc("/PublicPetitBac", JoinPublicPetitBac)
+	http.HandleFunc("/CreatePetitBac", CreatePetitBac)
+	http.HandleFunc("/CreatePetitBacHandler", CreatePetitBacHandler)
+	http.HandleFunc("/JoinPetitBac", JoinPrivatePetitBac)
+	http.HandleFunc("/JoinPetitBacHandler", JoinPetitBacHandler)
 	http.HandleFunc("/PetitBacRules", PetitBacRules)
 	go handleMessages()
 	http.HandleFunc("/websocket", websocketHandler)
@@ -605,22 +616,10 @@ func Blindtest(w http.ResponseWriter, r *http.Request) {
 			DurationOfAnswer: roomData.BlindtestTimeToAnswer,
 		}
 
-		//Ici, recolter les données et les envoyer par websocket à tous les joueurs présents dans la room
-		jsonData, err := json.Marshal(data)
-		if err != nil {
-			fmt.Println("Error marshaling message to JSON:", err)
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-			return
-		}
-
-		broadcast <- Message{
-			GamesDatas: string(jsonData),
-		}
 		//Execute html
 		renderTemplate(w, "BlindTest/index.html", data)
-
 	} else {
-		//Ici, récolter les données reçues par websocket et les enregistrées dans data
+
 		data := struct {
 			MediasBlindtest  Data
 			DurationOfMusic  int
@@ -662,6 +661,12 @@ func BlindtestRoom(w http.ResponseWriter, r *http.Request) {
 
 	if userID == creatorID {
 		data.ButtonVisible = true
+	} else {
+		for !database.GetGameState(roomID) {
+			time.Sleep(1 * time.Second)
+		}
+
+		http.Redirect(w, r, "/Blindtest", http.StatusSeeOther)
 	}
 
 	//Online chat
@@ -707,7 +712,19 @@ func BlindtestRoom(w http.ResponseWriter, r *http.Request) {
 }
 
 func BlindtestRoomHandler(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("session_id")
+	if err != nil {
+		http.Redirect(w, r, "/Login", http.StatusSeeOther)
+		return
+	}
 
+	userID, _ := strconv.Atoi(cookie.Value)
+	roomID, err := database.GetRoomIDByUserID(userID)
+	if err != nil {
+		http.Redirect(w, r, "/JoinBlindtest", http.StatusSeeOther)
+	}
+	database.SetGameState(roomID)
+	http.Redirect(w, r, "/Blindtest", http.StatusSeeOther)
 }
 
 func JoinPublicBlindtest(w http.ResponseWriter, r *http.Request) {
@@ -743,7 +760,7 @@ func JoinPublicBlindtest(w http.ResponseWriter, r *http.Request) {
 		timeOfMusic := 10
 		timeToAnswer := 5
 
-		_, err = gameRoomDB.Exec("INSERT INTO GAME_ROOM (id_room, number_of_game_turns, blindtest_time_of_music, blindtest_time_to_answer) VALUES (?, ?, ?, ?)", roomID, numberOfGameTurns, timeOfMusic, timeToAnswer)
+		_, err = gameRoomDB.Exec("INSERT INTO GAME_ROOM (id_room, game_state, number_of_game_turns, blindtest_time_of_music, blindtest_time_to_answer) VALUES (?, ?, ?, ?, ?)", roomID, true, numberOfGameTurns, timeOfMusic, timeToAnswer)
 		if err != nil {
 			log.Println("Error creating game room:", err)
 			return
@@ -907,31 +924,218 @@ func GuessTheSong(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func GuessTheSongLose(w http.ResponseWriter, r *http.Request) {
-	html := template.Must(template.ParseFiles("html/GuessTheSong/Lose.html"))
+func GuessTheSongRoom(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("session_id")
+	if err != nil {
+		http.Redirect(w, r, "/Login", http.StatusSeeOther)
+		return
+	}
 
-	if r.Method == "POST" {
-		games.ResetData()
+	userID, _ := strconv.Atoi(cookie.Value)
+	roomID, err := database.GetRoomIDByUserID(userID)
+	if err != nil {
+		http.Redirect(w, r, "/JoinGuessTheSong", http.StatusSeeOther)
+	}
+
+	creatorID := database.GetRoomCreator(roomID)
+	numberOfPlayer := database.GetNumberOfPlayer(roomID)
+
+	mediasBlindtest := Data{Info: messages}
+
+	data := struct {
+		ButtonVisible   bool
+		MediasBlindtest Data
+		RoomID          int
+		PlayerNumber    int
+	}{
+		ButtonVisible:   false,
+		MediasBlindtest: mediasBlindtest,
+		RoomID:          roomID,
+		PlayerNumber:    numberOfPlayer,
+	}
+
+	if userID == creatorID {
+		data.ButtonVisible = true
+	} else {
+		for !database.GetGameState(roomID) {
+			time.Sleep(1 * time.Second)
+		}
+
 		http.Redirect(w, r, "/GuessTheSong", http.StatusSeeOther)
 	}
 
-	err := html.Execute(w, nil)
-	if err != nil {
-		return
+	//Online chat
+	if r.Method == "POST" {
+		action := r.FormValue("action")
+		if action == "ChatMessage" {
+			message := r.Form.Get("Message")
+			ChatDiscours = message
+			messages = append(messages, Message{
+				Username:    Pseudo,
+				TextMessage: ChatDiscours,
+			})
+
+			jsonMessage, err := json.Marshal(messages[len(messages)-1])
+			if err != nil {
+				fmt.Println("Error marshaling message to JSON:", err)
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				return
+			}
+
+			broadcast <- Message{
+				Username:    Pseudo,
+				TextMessage: string(jsonMessage),
+			}
+		}
+		if action == "DeleteMessage" {
+			indexStr := r.Form.Get("messageIndex")
+			index, err := strconv.Atoi(indexStr)
+			if err != nil {
+				http.Error(w, "Invalid message index", http.StatusBadRequest)
+				return
+			}
+			if index < 0 || index >= len(messages) {
+				http.Error(w, "Invalid message index", http.StatusBadRequest)
+				return
+			}
+			messages = append(messages[:index], messages[index+1:]...)
+		}
 	}
+
+	//Execute html
+	renderTemplate(w, "GuessTheSong/Room.html", data)
 }
 
-func GuessTheSongWin(w http.ResponseWriter, r *http.Request) {
-	html := template.Must(template.ParseFiles("html/GuessTheSong/Win.html"))
-
-	if r.Method == "POST" {
-		games.ResetData()
-		http.Redirect(w, r, "/GuessTheSong", http.StatusSeeOther)
+func GuessTheSongRoomHandler(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("session_id")
+	if err != nil {
+		http.Redirect(w, r, "/Login", http.StatusSeeOther)
+		return
 	}
 
-	err := html.Execute(w, nil)
+	userID, _ := strconv.Atoi(cookie.Value)
+	roomID, err := database.GetRoomIDByUserID(userID)
 	if err != nil {
+		http.Redirect(w, r, "/JoinGuessTheSong", http.StatusSeeOther)
+	}
+	database.SetGameState(roomID)
+	http.Redirect(w, r, "/GuessTheSong", http.StatusSeeOther)
+}
+
+func JoinPublicGuessTheSong(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("session_id")
+	if err != nil {
+		http.Redirect(w, r, "/Login", http.StatusSeeOther)
 		return
+	}
+
+	userID, _ := strconv.Atoi(cookie.Value)
+	roomID := 1
+
+	if !database.CheckRoomExistence(roomID) {
+		db := database.InitTable("ROOMS")
+		defer db.Close()
+
+		createdBy := userID
+		maxPlayers := 50
+		name := "publicGuessTheSong"
+		gameID := 1
+
+		// Create the public room
+		_, err := db.Exec("INSERT INTO ROOMS (id, created_by, max_player, number_of_player, name, id_game) VALUES (?, ?, ?, ?, ?, ?)", roomID, createdBy, maxPlayers, 0, name, gameID)
+		if err != nil {
+			log.Println("Error creating room:", err)
+		}
+
+		//Room Data
+		gameRoomDB := database.InitTable("GAME_ROOM")
+		defer gameRoomDB.Close()
+
+		numberOfGameTurns := 10
+		timeOfMusic := 10
+		timeToAnswer := 5
+
+		_, err = gameRoomDB.Exec("INSERT INTO GAME_ROOM (id_room, game_state, number_of_game_turns, blindtest_time_of_music, blindtest_time_to_answer) VALUES (?, ?, ?, ?, ?)", roomID, true, numberOfGameTurns, timeOfMusic, timeToAnswer)
+		if err != nil {
+			log.Println("Error creating game room:", err)
+			return
+		}
+	}
+
+	database.JoinRoom(roomID, userID)
+
+	http.Redirect(w, r, "/GuessTheSong", http.StatusSeeOther)
+}
+
+func CreateGuessTheSong(w http.ResponseWriter, r *http.Request) {
+	renderTemplate(w, "GuessTheSong/CreatePrivateRoom.html", nil)
+}
+
+func CreateGuessTheSongHandler(w http.ResponseWriter, r *http.Request) {
+	gameTurns, _ := strconv.Atoi(r.FormValue("gameTurns"))
+	difficulty := r.FormValue("difficulty")
+	answerDuration, _ := strconv.Atoi(r.FormValue("answerDuration"))
+	roomName := r.FormValue("roomName")
+	maxPlayer, _ := strconv.Atoi(r.FormValue("maxPlayer"))
+
+	if gameTurns <= 0 {
+		gameTurns = 5
+	}
+	if answerDuration <= 0 {
+		answerDuration = 30
+	}
+
+	cookie, err := r.Cookie("session_id")
+	if err != nil {
+		http.Redirect(w, r, "/Login", http.StatusSeeOther)
+		return
+	}
+
+	sessionID := cookie.Value
+
+	userID, _ := strconv.Atoi(sessionID)
+	gameID := 2
+
+	database.CreateGuessthesongRoom(userID, maxPlayer, roomName, gameID, gameTurns, difficulty, answerDuration)
+
+	http.Redirect(w, r, "/GuessTheSongRoom", http.StatusSeeOther)
+}
+
+func JoinPrivateGuessTheSong(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("session_id")
+	if err != nil {
+		http.Redirect(w, r, "/Login", http.StatusSeeOther)
+		return
+	}
+
+	userID, _ := strconv.Atoi(cookie.Value)
+
+	roomID, err := database.GetRoomIDByUserID(userID)
+	//If the user is associate to a room, we have to make him leave
+	if err == nil {
+		database.LeaveRoom(roomID, userID)
+	}
+
+	renderTemplate(w, "GuessTheSong/JoinPrivateRoom.html", nil)
+}
+
+func JoinGuessTheSongHandler(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("session_id")
+	if err != nil {
+		http.Redirect(w, r, "/Login", http.StatusSeeOther)
+		return
+	}
+	userID, _ := strconv.Atoi(cookie.Value)
+	roomID, err2 := strconv.Atoi(r.FormValue("roomID"))
+	if err2 != nil || roomID <= 0 {
+		data := struct{ ErrorMessage string }{ErrorMessage: "Veuillez rentrez un identifiant valide."}
+		renderTemplate(w, "GuessTheSong/JoinPrivateRoom.html", data)
+	} else if !database.VerifyRoom(roomID) {
+		data := struct{ ErrorMessage string }{ErrorMessage: "Aucune room ne correspond à cet identifiant."}
+		renderTemplate(w, "GuessTheSong/JoinPrivateRoom.html", data)
+	} else {
+		database.JoinRoom(roomID, userID)
+		http.Redirect(w, r, "/GuessTheSongRoom", http.StatusSeeOther)
 	}
 }
 
@@ -1048,6 +1252,221 @@ func PetitBac(w http.ResponseWriter, r *http.Request) {
 
 func PetitBacHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/PetitBac", http.StatusSeeOther)
+}
+
+func PetitBacRoom(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("session_id")
+	if err != nil {
+		http.Redirect(w, r, "/Login", http.StatusSeeOther)
+		return
+	}
+
+	userID, _ := strconv.Atoi(cookie.Value)
+	roomID, err := database.GetRoomIDByUserID(userID)
+	if err != nil {
+		http.Redirect(w, r, "/JoinPetitBac", http.StatusSeeOther)
+	}
+
+	creatorID := database.GetRoomCreator(roomID)
+	numberOfPlayer := database.GetNumberOfPlayer(roomID)
+
+	mediasBlindtest := Data{Info: messages}
+
+	data := struct {
+		ButtonVisible   bool
+		MediasBlindtest Data
+		RoomID          int
+		PlayerNumber    int
+	}{
+		ButtonVisible:   false,
+		MediasBlindtest: mediasBlindtest,
+		RoomID:          roomID,
+		PlayerNumber:    numberOfPlayer,
+	}
+
+	if userID == creatorID {
+		data.ButtonVisible = true
+	} else {
+		for !database.GetGameState(roomID) {
+			time.Sleep(1 * time.Second)
+		}
+
+		http.Redirect(w, r, "/PetitBac", http.StatusSeeOther)
+	}
+
+	//Online chat
+	if r.Method == "POST" {
+		action := r.FormValue("action")
+		if action == "ChatMessage" {
+			message := r.Form.Get("Message")
+			ChatDiscours = message
+			messages = append(messages, Message{
+				Username:    Pseudo,
+				TextMessage: ChatDiscours,
+			})
+
+			jsonMessage, err := json.Marshal(messages[len(messages)-1])
+			if err != nil {
+				fmt.Println("Error marshaling message to JSON:", err)
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				return
+			}
+
+			broadcast <- Message{
+				Username:    Pseudo,
+				TextMessage: string(jsonMessage),
+			}
+		}
+		if action == "DeleteMessage" {
+			indexStr := r.Form.Get("messageIndex")
+			index, err := strconv.Atoi(indexStr)
+			if err != nil {
+				http.Error(w, "Invalid message index", http.StatusBadRequest)
+				return
+			}
+			if index < 0 || index >= len(messages) {
+				http.Error(w, "Invalid message index", http.StatusBadRequest)
+				return
+			}
+			messages = append(messages[:index], messages[index+1:]...)
+		}
+	}
+
+	//Execute html
+	renderTemplate(w, "PetitBac/Room.html", data)
+}
+
+func PetitBacRoomHandler(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("session_id")
+	if err != nil {
+		http.Redirect(w, r, "/Login", http.StatusSeeOther)
+		return
+	}
+
+	userID, _ := strconv.Atoi(cookie.Value)
+	roomID, err := database.GetRoomIDByUserID(userID)
+	if err != nil {
+		http.Redirect(w, r, "/JoinPetitBac", http.StatusSeeOther)
+	}
+	database.SetGameState(roomID)
+	http.Redirect(w, r, "/PetitBac", http.StatusSeeOther)
+}
+
+func JoinPublicPetitBac(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("session_id")
+	if err != nil {
+		http.Redirect(w, r, "/Login", http.StatusSeeOther)
+		return
+	}
+
+	userID, _ := strconv.Atoi(cookie.Value)
+	roomID := 1
+
+	if !database.CheckRoomExistence(roomID) {
+		db := database.InitTable("ROOMS")
+		defer db.Close()
+
+		createdBy := userID
+		maxPlayers := 50
+		name := "publicGuessTheSong"
+		gameID := 1
+
+		// Create the public room
+		_, err := db.Exec("INSERT INTO ROOMS (id, created_by, max_player, number_of_player, name, id_game) VALUES (?, ?, ?, ?, ?, ?)", roomID, createdBy, maxPlayers, 0, name, gameID)
+		if err != nil {
+			log.Println("Error creating room:", err)
+		}
+
+		//Room Data
+		gameRoomDB := database.InitTable("GAME_ROOM")
+		defer gameRoomDB.Close()
+
+		numberOfGameTurns := 10
+		timeOfMusic := 10
+		timeToAnswer := 5
+
+		_, err = gameRoomDB.Exec("INSERT INTO GAME_ROOM (id_room, game_state, number_of_game_turns, blindtest_time_of_music, blindtest_time_to_answer) VALUES (?, ?, ?, ?, ?)", roomID, true, numberOfGameTurns, timeOfMusic, timeToAnswer)
+		if err != nil {
+			log.Println("Error creating game room:", err)
+			return
+		}
+	}
+
+	database.JoinRoom(roomID, userID)
+
+	http.Redirect(w, r, "/GuessTheSong", http.StatusSeeOther)
+}
+
+func CreatePetitBac(w http.ResponseWriter, r *http.Request) {
+	renderTemplate(w, "PetitBac/CreatePrivateRoom.html", nil)
+}
+
+func CreatePetitBacHandler(w http.ResponseWriter, r *http.Request) {
+	gameTurns, _ := strconv.Atoi(r.FormValue("gameTurns"))
+	categories := r.Form["categories[]"]
+	answerDuration, _ := strconv.Atoi(r.FormValue("answerDuration"))
+	roomName := r.FormValue("roomName")
+	maxPlayer, _ := strconv.Atoi(r.FormValue("maxPlayer"))
+
+	if gameTurns <= 0 {
+		gameTurns = 5
+	}
+	if answerDuration <= 0 {
+		answerDuration = 5
+	}
+
+	cookie, err := r.Cookie("session_id")
+	if err != nil {
+		http.Redirect(w, r, "/Login", http.StatusSeeOther)
+		return
+	}
+
+	sessionID := cookie.Value
+
+	userID, _ := strconv.Atoi(sessionID)
+	gameID := 1
+
+	database.CreatePetitbacRoom(userID, maxPlayer, roomName, gameID, gameTurns, categories, answerDuration)
+
+	http.Redirect(w, r, "/PetitBacRoom", http.StatusSeeOther)
+}
+
+func JoinPrivatePetitBac(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("session_id")
+	if err != nil {
+		http.Redirect(w, r, "/Login", http.StatusSeeOther)
+		return
+	}
+
+	userID, _ := strconv.Atoi(cookie.Value)
+
+	roomID, err := database.GetRoomIDByUserID(userID)
+	//If the user is associate to a room, we have to make him leave
+	if err == nil {
+		database.LeaveRoom(roomID, userID)
+	}
+
+	renderTemplate(w, "PetitBac/JoinPrivateRoom.html", nil)
+}
+
+func JoinPetitBacHandler(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("session_id")
+	if err != nil {
+		http.Redirect(w, r, "/Login", http.StatusSeeOther)
+		return
+	}
+	userID, _ := strconv.Atoi(cookie.Value)
+	roomID, err2 := strconv.Atoi(r.FormValue("roomID"))
+	if err2 != nil || roomID <= 0 {
+		data := struct{ ErrorMessage string }{ErrorMessage: "Veuillez rentrez un identifiant valide."}
+		renderTemplate(w, "PetitBac/JoinPrivateRoom.html", data)
+	} else if !database.VerifyRoom(roomID) {
+		data := struct{ ErrorMessage string }{ErrorMessage: "Aucune room ne correspond à cet identifiant."}
+		renderTemplate(w, "PetitBac/JoinPrivateRoom.html", data)
+	} else {
+		database.JoinRoom(roomID, userID)
+		http.Redirect(w, r, "/PetitBacRoom", http.StatusSeeOther)
+	}
 }
 
 func PetitBacRules(w http.ResponseWriter, r *http.Request) {
