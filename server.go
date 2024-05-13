@@ -92,20 +92,6 @@ func handleMessages() {
 }
 
 func main() {
-	db := database.InitTable("USER")
-	defer db.Close()
-	roomDB := database.InitTable("ROOMS")
-	gameRoomDB := database.InitTable("GAME_ROOM")
-	roomUserDB := database.InitTable("ROOM_USERS")
-
-	db.Exec("DELETE FROM USER WHERE id > 1;") // /!\ TO REMOVE BEFORE DEPLOYMENT /!\
-	roomDB.Exec("DELETE FROM ROOMS")
-	gameRoomDB.Exec("DELETE FROM GAME_ROOM")
-	roomUserDB.Exec("DELETE FROM ROOM_USERS")
-
-	rowsUsers := database.SelectAllFromTable(db, "USER")
-	database.DisplayUserTable(rowsUsers) //--> Show the table USER in terminal
-
 	http.HandleFunc("/", LoginPage)
 	http.HandleFunc("/LoginHandler", LoginHandler)
 	http.HandleFunc("/Register", RegisterPage)
