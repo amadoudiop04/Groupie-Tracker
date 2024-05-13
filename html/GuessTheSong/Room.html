@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400..700&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/blindTest.css">
+    <title>Groupie Tracker - Guess the song</title>
+</head>
+
+<body>
+    <h1 class="title-top">Guess the song</h1>
+
+    <div class="container-block">
+        <div class="audioContainer">
+            {{if .RoomID}}
+            <p>Voici l'identifiant de votre serveur : {{.RoomID}}.</p>
+            {{end}}
+
+            {{if .PlayerNumber}}
+            <p>Vous êtes actuellement {{.PlayerNumber}} dans le serveur.</p>
+            <p style="font-size: 12px; margin-top: -15px;">(Vous devez rafraîchir la page pour voir ce nombre évoluer)</p>
+            {{end}}
+
+            <div class="deco-Img">    
+        </div>
+      
+        {{if .ButtonVisible}}
+        <form action="/GuessTheSongRoomHandler" method="post">
+            <button  class="mybtn" type="submit" name="action" value="BlindTest">Démarrer le jeu</button>
+        </form>
+        {{else}}
+        <p>Patience... l'hôte peut démarrer la partie d'une seconde à l'autre !</p>
+        {{end}}
+    </div>
+
+    <div class="lyrics">
+        <form action="/GuessTheSong" method="post" style="display: inline;">
+        <div class="divParoles">
+            Chat message🖊
+            <br>
+            {{range $index, $message := .MediasBlindtest.Info}}
+            {{$message.Username}}: {{$message.TextMessage}}<button class="DeleteBtn" type="submit" name="action" value="DeleteMessage">🗑</button>
+            <input type="hidden" name="messageIndex" value="{{$index}}">
+            {{end}}
+            <br>
+                <input class="myInput" name="Message" id="Message" placeholder="écrivez votre message" type="text">
+                <button name="action" value="ChatMessage" class="mybtnMessage">Envoyer</button>
+            </form>
+        </div>
+
+    </div>
+</body>
+</html>

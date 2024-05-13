@@ -1,0 +1,206 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  background: rgb(39, 38, 38);
+  color: #333;
+  height: 100%;
+  overflow: hidden;
+}
+
+ 
+.scoreboard {
+  justify-content: center;
+  align-items: center;
+  border: 2px solid #ccc;
+  color: white;
+  position: fixed;
+  border-radius: 10px;
+  top: 10px;
+  right: 10px;
+  z-index: 999;
+}
+
+.title-top{
+  color: aliceblue;
+  display: flex;
+  justify-content: center;
+  font-family: "Dancing Script", cursive;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.myInput,.mybtn{
+  border-radius: 20px;
+}
+
+.myInput{
+  font-size: 1.5   em;
+}
+
+.mybtn{
+  color: white;
+  font-size: 1.5em;
+  background-color:  rgb(21, 124, 220);
+}
+
+.inputContainer{
+  text-align: center;
+  margin: 5px;
+}
+
+.audioContainer{
+  align-content: center;
+  text-align: center;
+  background: linear-gradient(to bottom right,#50ffd3,#6A5ACD);
+  border-radius: 20px;
+  height: 450px;
+  width: 50%; 
+}
+
+.myAudio{
+  display: flex;
+  justify-content: center;
+}
+
+.container-block{
+  display: flex;
+  justify-content: center;
+  margin: 7%;
+}
+
+.container {
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 3%;
+}
+
+.wave {
+  height: 0px;
+  width: 10px;
+  border-radius: 20px;
+  background: white;
+  display: inline-block;
+  margin: 0px 20px;
+  animation: waveloader 2s infinite linear;
+}
+
+.wave:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.wave:nth-child(2) {
+  animation-delay: 0.5s;
+}
+
+.wave:nth-child(3) {
+  animation-delay: 1.0s;
+}
+
+.wave:nth-child(4) {
+  animation-delay: 1.5s;
+}
+
+.wave:nth-child(5) {
+  animation-delay: 2s;
+}
+
+@keyframes waveloader {
+  50% {
+    height: 20%;
+  }
+
+  100% {
+    height: 100%;
+  }
+}
+
+.deco-Img{
+  background: center / cover no-repeat url("https://cdn-0001.qstv.on.epicgames.com/STtNnKCZQQLvsJRioZ/image/landscape_comp.jpeg");
+  transform: translateX(110%);
+  border: solid 1px black;
+  height: 30%;
+  width: 30%;
+  border-radius: 50%;
+  -moz-box-shadow: 0px 6px 5px black;
+  -webkit-box-shadow: 0px 6px 5px black;
+  box-shadow: 0px 6px 5px black;
+  -moz-border-radius: 190px;
+  -webkit-border-radius: 190px;
+  margin: 10px;
+  margin-bottom: 40px;
+}
+
+.RoomsButtons{
+  margin: 7.7%;
+}
+
+.RoomsButton {
+  width: 250px;
+  height: 50px;
+  margin-top: 20px;
+  margin-left: 5px;
+  margin-right: 5px;
+  font-size: 20px;
+  font-family: 'Times New Roman', Times, serif;
+  cursor: pointer;
+  background: linear-gradient(to left, #35bfc6, #97eaef);
+  color: rgb(0, 0, 0);
+  border: 0.5px black solid;
+  border-radius: 5px;
+}
+
+.RulesButton {
+  width: 150px;
+  height: 30px;
+  margin-left: 5px;
+  margin-right: 5px;
+  font-size: 15px;
+  font-family: 'Times New Roman', Times, serif;
+  cursor: pointer;
+  background: linear-gradient(to left, #35bfc6, #97eaef);
+  color: rgb(0, 0, 0);
+  border: 0.5px black solid;
+  border-radius: 5px;
+}
+
+
+
+.lyrics {
+  border: solid black 1px;
+  border-radius: 10px;
+  color: #ddd;
+  background-color: rgba(64, 62, 62, 0.5);
+  width: 38%;
+  overflow: auto;
+  margin: 2%;
+}
+
+.divParoles {
+  text-align: center;
+  font-family: "Cormorant", serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+  height: 250px;
+}
+
+.mybtnMessage{
+  background-color: green;
+  border-radius: 10px;
+}
+
+.myInput{
+  border-radius: 10px;
+  margin: 1.5%;
+}
+
+.DeleteBtn{
+  color: white;
+  background-color: red;
+  border-radius: 10px;
+  margin: 0.5%;
+}

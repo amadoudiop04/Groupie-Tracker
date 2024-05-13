@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400..700&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/privateRoom.css">
+    <title>Groupie Tracker - Guess the song</title>
+</head>
+
+<body>
+
+    <h1 class="title-top">Guess the song</h1>
+    <p class="info"> Les données non remplies seront automatiquement attribués. </p>
+
+    <div class="container">
+        <form id="CreateRoom" action="/CreateGuessTheSongHandler" method="post">
+            <input class="defRules" type="text" name="roomName" placeholder="Nom de votre serveur" required>
+            <input class="defRules" type="number" name="maxPlayer" placeholder="Nombre de joueur maximum" required>
+            <input class="defRules" type="number" name="gameTurns" placeholder="Nombre de tours">
+            <select class="defRules" name="difficulty" required>
+                <option value="facile">Facile</option>
+                <option value="moyen">Moyen</option>
+                <option value="difficile">Difficile</option>
+            </select>            
+            <input class="defRules" type="number" name="answerDuration"
+                placeholder="Temps de réponse">
+            <button class="btnDef" type="submit">Valider</button>
+        </form>
+    </div>
+
+    <div class="rules">
+      Pensez à bien définir les nombres tours et caractéristiques essentiels pour le bon fonctionnement de votre jeu !
+      <br>
+      Merci et bon jeu ❗😊
+    </div>
+
+</body>
+
+</html>
+
+
+
+

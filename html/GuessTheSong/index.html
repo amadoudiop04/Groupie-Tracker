@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Groupie Tracker - Guess the song</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,300..700;1,300..700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Satisfy&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/guessTheSong.css">
+</head>
+
+<body>
+    <h1 class="title-top">Guess the song</h1>
+    <div class="scoreBoard">
+        {{if .UserScore}}
+        Score : {{.UserScore}}
+        {{end}}
+        {{if .Username}}
+        User : {{.Username}}
+        {{end}}
+        {{if .ActualTurn}}
+        Tour {{.ActualTurn}} / {{.NumberOfTurns}}
+        {{end}}
+    </div>
+
+    <div class="player">
+        <div class="lyricsContainer">
+            <div class="divParoles" id="parolesContainer">
+                <p id="lyrics" style="display: none;">{{.MediasGuessthesong.Datasgames.LyricsSong}}</p>
+                <p class="lines" id="line1" style="opacity: 0;"></p>
+                <p class="lines" id="line2" style="opacity: 0;"></p>
+                <p class="lines" id="line3" style="opacity: 0;"></p>
+                <p class="lines" id="line4" style="opacity: 0;"></p>
+                <p class="lines" id="line5" style="opacity: 0;"></p>
+                
+                     <div class="ChatMessage">     
+                    <form action="/GuessTheSong" method="post" style="display: inline;">
+                    <div class="Message">
+                    Chat message🖊
+                    <br>
+                    {{range $index, $message := .MediasGuessthesong.Info}}
+                    {{$message.Username}}: {{$message.TextMessage}}<button class="DeleteBtn" type="submit" name="action"
+                        value="DeleteMessage">🗑</button>
+                    <input type="hidden" name="messageIndex" value="{{$index}}">
+                    {{end}}
+                    <br>
+                    <input class="myInput" name="Message" id="Message" placeholder="écrivez votre message" type="text"><button name="action" value="ChatMessage" class="mybtnMessage">Envoyer</button>
+                    </div>
+                    </form>
+                    </div> 
+            </div>
+        </div>
+        <div class="wrapper">
+            <div class="details">
+                <div class="track-art" id="rotate">
+                </div>
+                <div class="track-name">
+                </div>
+                <div class="track-artist">
+                </div>
+            </div>
+
+            <div class="container">
+                <span class="wave"></span>
+                <span class="wave"></span>
+                <span class="wave"></span>
+                <span class="wave"></span>
+                <span class="wave"></span>
+            </div>
+
+            <p id="timeRemaining">Il reste 25 secondes pour répondre</p>
+
+            <form action="/GuessTheSong" method="post">
+                <div class="inputResquest">
+                    <input class="requestSong" type="text" placeholder="Votre réponse" name="value" autocomplete="off">
+                    <button class="Mybtn" name="action" value="guessTheSong" type="submit">Valider</button>
+                </div>
+            </form>
+        </div>
+    </div>
+   
+    <script src="/static/js/guessTheSongTimer.js"></script>
+    <noscript>
+        <style>
+            .lines {
+                display: none;
+            }
+
+            #lyrics {
+                display: contents
+            }
+        </style>
+    </noscript>
+</body>
+
+</html>

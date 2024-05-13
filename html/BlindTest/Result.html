@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/result.css">
+    <title>Groupie Tracker - Blind Test</title>
+</head>
+
+<body>
+
+    <h1 class="title-top">Blind Test - Résultats</h1>
+    <div class="Container">
+        {{if .ScoreBoard}}
+        <div class="wrapper">
+            <table id="scoreTable">
+                <caption>Scores💌🎰</caption>
+                <thead>
+                    <tr>
+                        <th>Classement</th>
+                        <th>Nom</th>
+                        <th>Points</th>
+                    </tr>
+                    {{range .ScoreBoard}}
+                    <tr>
+                        <td>{{.Rank}}</td>
+                        <td>{{.Name}}</td>
+                        <td>{{.Points}}</td>
+                    </tr>
+                    {{end}}
+                </thead>
+            </table>
+        </div>
+        {{end}}
+    </div>
+</body>
+
+</html>
