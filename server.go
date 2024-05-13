@@ -147,7 +147,7 @@ func main() {
 }
 
 func renderTemplate(w http.ResponseWriter, templatePath string, data interface{}) {
-	tmpl, err := template.ParseFiles("./html/" + templatePath) //, "./html/templates/header.html", "./html/templates/head.html")
+	tmpl, err := template.ParseFiles("./html/" + templatePath)
 	if err != nil {
 		log.Print(err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -655,8 +655,6 @@ func Blindtest(w http.ResponseWriter, r *http.Request) {
 		tracks = games.RemovePlayedTracks(tracks)
 		// currentTrack := tracks[gameData.BlindtestTrackIndex]
 		currentTrack, _ := games.NextTrack(tracks)
-		// fmt.Println("Tracks lenght : " + strconv.Itoa(len(tracks)))
-		// fmt.Println("Players index : " + strconv.Itoa(gameData.BlindtestTrackIndex))
 		if currentTrack == nil {
 			http.Redirect(w, r, "/Result", http.StatusSeeOther)
 		}

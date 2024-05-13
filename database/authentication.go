@@ -8,7 +8,6 @@ import (
 	"math/rand"
 	"regexp"
 	"strings"
-	"time"
 )
 
 func HashPassword(password string) string {
@@ -134,11 +133,10 @@ func ReplaceEmptyString(value, defaultValue string) string {
 }
 
 func GenerateCode() int {
-	rand.Seed(time.Now().UnixNano())
 	return rand.Intn(900000) + 100000
 }
 
-//structures
+//structure
 
 type User struct {
 	Id           int

@@ -89,10 +89,8 @@ func IsTrackPlayed(track *spotify.SimpleTrack) bool {
 }
 
 func NormalizeString(s string) string {
-	// Convertir en minuscules
 	s = strings.ToLower(s)
 
-	// Normaliser les accents
 	t := make([]rune, 0, len(s))
 	for _, r := range s {
 		if unicode.IsLetter(r) {

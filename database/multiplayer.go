@@ -6,20 +6,10 @@ import (
 	"log"
 )
 
-// ---------------------------ROOMS---------------------------\\
-type Room struct {
-	Id         int
-	CreatedBy  int
-	MaxPlayers int
-	Name       string
-	GameID     int
-}
-
 func CreateRoom(createdBy int, maxPlayers int, name string, gameID int) int {
 	db := InitTable("ROOMS")
 	defer db.Close()
 
-	// Create the good ID for the room
 	var roomID int
 	for i := 0; i < 100; i++ {
 		roomID = (gameID * 100) + i
@@ -34,7 +24,6 @@ func CreateRoom(createdBy int, maxPlayers int, name string, gameID int) int {
 		}
 	}
 
-	// Créer la room avec l'ID déterminé
 	_, err := db.Exec("INSERT INTO ROOMS (id, created_by, max_player, number_of_player, name, id_game) VALUES (?, ?, ?, ?, ?, ?)", roomID, createdBy, maxPlayers, 0, name, gameID)
 	if err != nil {
 		log.Println("Error creating room:", err)
@@ -48,11 +37,9 @@ func CreateRoom(createdBy int, maxPlayers int, name string, gameID int) int {
 func CreateBlindtestRoom(createdBy int, maxPlayers int, name string, gameID int, numberOfGameTurns int, timeOfMusic int, timeToAnswer int) {
 	roomID := CreateRoom(createdBy, maxPlayers, name, gameID)
 
-	// Ouvrir une connexion à la table GAME_ROOM
 	gameRoomDB := InitTable("GAME_ROOM")
 	defer gameRoomDB.Close()
 
-	// Insérer les données dans la table GAME_ROOM
 	_, err := gameRoomDB.Exec("INSERT INTO GAME_ROOM (id_room, game_state, number_of_game_turns, blindtest_time_of_music, blindtest_time_to_answer) VALUES (?, ?, ?, ?, ?)", roomID, false, numberOfGameTurns, timeOfMusic, timeToAnswer)
 	if err != nil {
 		log.Println("Error creating game room:", err)
@@ -63,11 +50,9 @@ func CreateBlindtestRoom(createdBy int, maxPlayers int, name string, gameID int,
 func CreatePetitbacRoom(createdBy int, maxPlayers int, name string, gameID int, numberOfGameTurns int, categories string, timeToAnswer int) {
 	roomID := CreateRoom(createdBy, maxPlayers, name, gameID)
 
-	// Ouvrir une connexion à la table GAME_ROOM
 	gameRoomDB := InitTable("GAME_ROOM")
 	defer gameRoomDB.Close()
 
-	// Insérer les données dans la table GAME_ROOM
 	_, err := gameRoomDB.Exec("INSERT INTO GAME_ROOM (id_room, game_state, number_of_game_turns, petitbac_categories, petitbac_time_to_answer) VALUES (?, ?, ?, ?, ?)", roomID, false, numberOfGameTurns, categories, timeToAnswer)
 	if err != nil {
 		log.Println("Error creating game room:", err)
@@ -78,11 +63,9 @@ func CreatePetitbacRoom(createdBy int, maxPlayers int, name string, gameID int, 
 func CreateGuessthesongRoom(createdBy int, maxPlayers int, name string, gameID int, numberOfGameTurns int, difficulty string, timeToAnswer int) {
 	roomID := CreateRoom(createdBy, maxPlayers, name, gameID)
 
-	// Ouvrir une connexion à la table GAME_ROOM
 	gameRoomDB := InitTable("GAME_ROOM")
 	defer gameRoomDB.Close()
 
-	// Insérer les données dans la table GAME_ROOM
 	_, err := gameRoomDB.Exec("INSERT INTO GAME_ROOM (id_room, game_state, number_of_game_turns, guessthesong_difficulty, guessthesong_time_to_answer) VALUES (?, ?, ?, ?, ?)", roomID, false, numberOfGameTurns, difficulty, timeToAnswer)
 	if err != nil {
 		log.Println("Error creating game room:", err)
@@ -331,20 +314,6 @@ func SetUserScore(roomID, userID, score int) {
 	}
 }
 
-// ---------------------------GAME_ROOM---------------------------\\
-
-type GameRoomData struct {
-	GameState                bool
-	NumberOfGameTurns        int
-	BlindtestTrackIndex      int
-	BlindtestTimeOfMusic     int
-	BlindtestTimeToAnswer    int
-	PetitbacCategories       string
-	PetitbacTimeToAnswer     int
-	GuessthesongDifficulty   string
-	GuessthesongTimeToAnswer int
-}
-
 func GetRoomData(roomID int) GameRoomData {
 	db := InitTable("GAME_ROOM")
 	defer db.Close()
@@ -394,4 +363,26 @@ func UpdateGameData(data GameRoomData, roomID int) {
 	if err != nil {
 		fmt.Println(err)
 	}
+}
+
+//Structures
+
+type Room struct {
+	Id         int
+	CreatedBy  int
+	MaxPlayers int
+	Name       string
+	GameID     int
+}
+
+type GameRoomData struct {
+	GameState                bool
+	NumberOfGameTurns        int
+	BlindtestTrackIndex      int
+	BlindtestTimeOfMusic     int
+	BlindtestTimeToAnswer    int
+	PetitbacCategories       string
+	PetitbacTimeToAnswer     int
+	GuessthesongDifficulty   string
+	GuessthesongTimeToAnswer int
 }
