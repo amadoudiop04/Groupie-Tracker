@@ -5,10 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="5af4b541-60db-4e9a-83ea-982990b4b6db" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/games/guessthesong.go" beforeDir="false" afterPath="$PROJECT_DIR$/games/guessthesong.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/html/GuessTheSong/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/html/GuessTheSong/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/GAME_ROOM" beforeDir="false" afterPath="$PROJECT_DIR$/GAME_ROOM" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ROOMS" beforeDir="false" afterPath="$PROJECT_DIR$/ROOMS" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ROOM_USERS" beforeDir="false" afterPath="$PROJECT_DIR$/ROOM_USERS" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/USER" beforeDir="false" afterPath="$PROJECT_DIR$/USER" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server.go" beforeDir="false" afterPath="$PROJECT_DIR$/server.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/css/guessTheSong.css" beforeDir="false" afterPath="$PROJECT_DIR$/static/css/guessTheSong.css" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -208,6 +209,7 @@
       <workItem from="1714852345976" duration="599000" />
       <workItem from="1715000692462" duration="64000" />
       <workItem from="1715076303677" duration="120000" />
+      <workItem from="1715606558633" duration="13000" />
     </task>
     <servers />
   </component>

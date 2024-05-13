@@ -151,6 +151,7 @@ func main() {
 	http.HandleFunc("/JoinPetitBac", JoinPrivatePetitBac)
 	http.HandleFunc("/JoinPetitBacHandler", JoinPetitBacHandler)
 	http.HandleFunc("/PetitBacRules", PetitBacRules)
+	http.HandleFunc("/Result", Result)
 	go handleMessages()
 	http.HandleFunc("/websocket", websocketHandler)
 	fs := http.FileServer(http.Dir("./static/"))
@@ -624,6 +625,22 @@ func Blindtest(w http.ResponseWriter, r *http.Request) {
 			DurationOfMusic:  roomData.BlindtestTimeOfMusic,
 			DurationOfAnswer: roomData.BlindtestTimeToAnswer,
 		}
+
+		
+jsonData, err := json.Marshal(data)
+if err != nil {
+    fmt.Println("Erreur de marshaling JSON:", err)
+    return
+}
+
+for client := range clients {
+    err := client.WriteJSON(jsonData)
+    if err != nil {
+        fmt.Println("Erreur d'envoi de message JSON:", err)
+        client.Close()
+        delete(clients, client)
+    }
+}
 
 		//Execute html
 		renderTemplate(w, "BlindTest/index.html", data)
@@ -1575,4 +1592,10 @@ func JoinPetitBacHandler(w http.ResponseWriter, r *http.Request) {
 
 func PetitBacRules(w http.ResponseWriter, r *http.Request) {
 	renderTemplate(w, "PetitBac/Rules.html", nil)
+}
+
+
+
+func Result(w http.ResponseWriter, r *http.Request) {
+	renderTemplate(w, "Result/Result.html", nil)
 }
