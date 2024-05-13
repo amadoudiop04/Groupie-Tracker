@@ -61,7 +61,7 @@ func CreateBlindtestRoom(createdBy int, maxPlayers int, name string, gameID int,
 	}
 }
 
-func CreatePetitbacRoom(createdBy int, maxPlayers int, name string, gameID int, numberOfGameTurns int, categories []string, timeToAnswer int) {
+func CreatePetitbacRoom(createdBy int, maxPlayers int, name string, gameID int, numberOfGameTurns int, categories string, timeToAnswer int) {
 	roomID := CreateRoom(createdBy, maxPlayers, name, gameID)
 
 	// Ouvrir une connexion à la table GAME_ROOM

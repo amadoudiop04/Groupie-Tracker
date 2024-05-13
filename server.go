@@ -549,10 +549,19 @@ func Blindtest(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 		action := r.FormValue("action")
 		if action == "ChatMessage" {
+			cookie, err := r.Cookie("session_id")
+			if err != nil {
+				http.Redirect(w, r, "/Login", http.StatusSeeOther)
+				return
+			}
+
+			userID, _ := strconv.Atoi(cookie.Value)
+			userdata, _ := database.GetUserData(strconv.Itoa(userID))
+
 			message := r.Form.Get("Message")
 			ChatDiscours = message
 			messages = append(messages, Message{
-				Username:    Pseudo,
+				Username:    userdata.Pseudo,
 				TextMessage: ChatDiscours,
 			})
 
@@ -564,7 +573,7 @@ func Blindtest(w http.ResponseWriter, r *http.Request) {
 			}
 
 			broadcast <- Message{
-				Username:    Pseudo,
+				Username:    userdata.Pseudo,
 				TextMessage: string(jsonMessage),
 			}
 		}
@@ -857,70 +866,150 @@ func GuessTheSongLandingPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func GuessTheSong(w http.ResponseWriter, r *http.Request) {
-	games.LoadData()
-	w.Header().Set("Refresh", "25")
-	if r.Method == "POST" {
-		action := r.FormValue("action")
-		if action == "guessTheSong" {
-			input := r.FormValue("value")
-			if games.CompareStrings(input, games.CurrentSong.TitleSong) {
-				games.CurrentSong.Scores += 10
-			} else {
-				games.CurrentSong.RemainingAttempts--
-			}
-			if games.CurrentSong.RemainingAttempts == 0 {
-				http.Redirect(w, r, "/GuessTheSongLose", http.StatusSeeOther)
-			}
-			if games.CurrentSong.Scores == 50 {
-				http.Redirect(w, r, "/GuessTheSongWin", http.StatusSeeOther)
-			}
-		}
-		if action == "ChatMessage" {
-			message := r.Form.Get("Message")
-			ChatDiscours = message
-			messages = append(messages, Message{
-				Username:    Pseudo,
-				TextMessage: ChatDiscours,
-			})
-
-			jsonMessage, err := json.Marshal(messages[len(messages)-1])
-			if err != nil {
-				fmt.Println("Error marshaling message to JSON:", err)
-				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-				return
-			}
-
-			broadcast <- Message{
-				Username:    Pseudo,
-				TextMessage: string(jsonMessage),
-			}
-		}
-		if action == "DeleteMessage" {
-			indexStr := r.Form.Get("messageIndex")
-			index, err := strconv.Atoi(indexStr)
-			if err != nil {
-				http.Error(w, "Invalid message index", http.StatusBadRequest)
-				return
-			}
-			if index < 0 || index >= len(messages) {
-				http.Error(w, "Invalid message index", http.StatusBadRequest)
-				return
-			}
-			messages = append(messages[:index], messages[index+1:]...)
-		}
-	}
-
-	medias := Data{
-		Datasgames: games.CurrentSong,
-		Info:       messages,
-	}
-
-	html := template.Must(template.ParseFiles("html/GuessTheSong/index.html"))
-	err := html.Execute(w, medias)
+	//Recovering the room and its data
+	cookie, err := r.Cookie("session_id")
 	if err != nil {
-		fmt.Println("Error executing template:", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		http.Redirect(w, r, "/Login", http.StatusSeeOther)
 		return
+	}
+
+	userID, _ := strconv.Atoi(cookie.Value)
+
+	roomID, err := database.GetRoomIDByUserID(userID)
+	if err != nil {
+		http.Redirect(w, r, "/JoinGuessTheSong", http.StatusSeeOther)
+	}
+
+	roomData, err := database.GetRoomData(roomID)
+	if err != nil {
+		fmt.Println("La room n'est associée à aucune données")
+	}
+
+	if userID == database.GetRoomCreator(roomID) {
+		w.Header().Set("Refresh", strconv.Itoa(roomData.GuessthesongTimeToAnswer))
+
+		games.LoadData()
+		medias := Data{
+			Datasgames: games.CurrentSong,
+			Info:       messages,
+		}
+
+		if r.Method == "POST" {
+			action := r.FormValue("action")
+			if action == "guessTheSong" {
+				input := r.FormValue("value")
+				if games.CompareStrings(input, games.CurrentSong.TitleSong) {
+					games.CurrentSong.Scores += 10
+				} else {
+					games.CurrentSong.RemainingAttempts--
+				}
+				if games.CurrentSong.RemainingAttempts == 0 {
+					http.Redirect(w, r, "/GuessTheSongLose", http.StatusSeeOther)
+				}
+				if games.CurrentSong.Scores == 50 {
+					http.Redirect(w, r, "/GuessTheSongWin", http.StatusSeeOther)
+				}
+			}
+			if action == "ChatMessage" {
+				cookie, err := r.Cookie("session_id")
+				if err != nil {
+					http.Redirect(w, r, "/Login", http.StatusSeeOther)
+					return
+				}
+
+				userID, _ := strconv.Atoi(cookie.Value)
+				userdata, _ := database.GetUserData(strconv.Itoa(userID))
+
+				message := r.Form.Get("Message")
+				ChatDiscours = message
+				messages = append(messages, Message{
+					Username:    userdata.Pseudo,
+					TextMessage: ChatDiscours,
+				})
+
+				jsonMessage, err := json.Marshal(messages[len(messages)-1])
+				if err != nil {
+					fmt.Println("Error marshaling message to JSON:", err)
+					http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+					return
+				}
+
+				broadcast <- Message{
+					Username:    userdata.Pseudo,
+					TextMessage: string(jsonMessage),
+				}
+			}
+			if action == "DeleteMessage" {
+				indexStr := r.Form.Get("messageIndex")
+				index, err := strconv.Atoi(indexStr)
+				if err != nil {
+					http.Error(w, "Invalid message index", http.StatusBadRequest)
+					return
+				}
+				if index < 0 || index >= len(messages) {
+					http.Error(w, "Invalid message index", http.StatusBadRequest)
+					return
+				}
+				messages = append(messages[:index], messages[index+1:]...)
+			}
+		}
+
+		//Execute html
+		renderTemplate(w, "GuessTheSong/index.html", medias)
+	} else {
+		if r.Method == "POST" {
+			action := r.FormValue("action")
+			if action == "guessTheSong" {
+				input := r.FormValue("value")
+				if games.CompareStrings(input, games.CurrentSong.TitleSong) {
+					games.CurrentSong.Scores += 10
+				} else {
+					games.CurrentSong.RemainingAttempts--
+				}
+				if games.CurrentSong.RemainingAttempts == 0 {
+					http.Redirect(w, r, "/GuessTheSongLose", http.StatusSeeOther)
+				}
+				if games.CurrentSong.Scores == 50 {
+					http.Redirect(w, r, "/GuessTheSongWin", http.StatusSeeOther)
+				}
+			}
+			if action == "ChatMessage" {
+				message := r.Form.Get("Message")
+				ChatDiscours = message
+				messages = append(messages, Message{
+					Username:    Pseudo,
+					TextMessage: ChatDiscours,
+				})
+
+				jsonMessage, err := json.Marshal(messages[len(messages)-1])
+				if err != nil {
+					fmt.Println("Error marshaling message to JSON:", err)
+					http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+					return
+				}
+
+				broadcast <- Message{
+					Username:    Pseudo,
+					TextMessage: string(jsonMessage),
+				}
+			}
+			if action == "DeleteMessage" {
+				indexStr := r.Form.Get("messageIndex")
+				index, err := strconv.Atoi(indexStr)
+				if err != nil {
+					http.Error(w, "Invalid message index", http.StatusBadRequest)
+					return
+				}
+				if index < 0 || index >= len(messages) {
+					http.Error(w, "Invalid message index", http.StatusBadRequest)
+					return
+				}
+				messages = append(messages[:index], messages[index+1:]...)
+			}
+		}
+
+		var medias Data
+		renderTemplate(w, "GuessTheSong/index.html", medias)
 	}
 }
 
@@ -1030,16 +1119,18 @@ func JoinPublicGuessTheSong(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userID, _ := strconv.Atoi(cookie.Value)
-	roomID := 1
+	roomID := 2
+	fmt.Println("data ok")
 
 	if !database.CheckRoomExistence(roomID) {
+		fmt.Println("boucle if ok")
 		db := database.InitTable("ROOMS")
 		defer db.Close()
 
 		createdBy := userID
 		maxPlayers := 50
 		name := "publicGuessTheSong"
-		gameID := 1
+		gameID := 2
 
 		// Create the public room
 		_, err := db.Exec("INSERT INTO ROOMS (id, created_by, max_player, number_of_player, name, id_game) VALUES (?, ?, ?, ?, ?, ?)", roomID, createdBy, maxPlayers, 0, name, gameID)
@@ -1052,10 +1143,10 @@ func JoinPublicGuessTheSong(w http.ResponseWriter, r *http.Request) {
 		defer gameRoomDB.Close()
 
 		numberOfGameTurns := 10
-		timeOfMusic := 10
-		timeToAnswer := 5
+		difficulty := "facile"
+		timeToAnswer := 20
 
-		_, err = gameRoomDB.Exec("INSERT INTO GAME_ROOM (id_room, game_state, number_of_game_turns, blindtest_time_of_music, blindtest_time_to_answer) VALUES (?, ?, ?, ?, ?)", roomID, true, numberOfGameTurns, timeOfMusic, timeToAnswer)
+		_, err = gameRoomDB.Exec("INSERT INTO GAME_ROOM (id_room, game_state, number_of_game_turns, guessthesong_difficulty, guessthesong_time_to_answer) VALUES (?, ?, ?, ?, ?)", roomID, true, numberOfGameTurns, difficulty, timeToAnswer)
 		if err != nil {
 			log.Println("Error creating game room:", err)
 			return
@@ -1192,11 +1283,20 @@ func PetitBac(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if action == "ChatMessage" {
+			cookie, err := r.Cookie("session_id")
+			if err != nil {
+				http.Redirect(w, r, "/Login", http.StatusSeeOther)
+				return
+			}
+
+			userID, _ := strconv.Atoi(cookie.Value)
+			userdata, _ := database.GetUserData(strconv.Itoa(userID))
+
 			log.Println("put your message")
 			message := r.Form.Get("Message")
 			ChatDiscours = message
 			messages = append(messages, Message{
-				Username:    Pseudo,
+				Username:    userdata.Pseudo,
 				TextMessage: ChatDiscours,
 			})
 
@@ -1208,7 +1308,7 @@ func PetitBac(w http.ResponseWriter, r *http.Request) {
 			}
 
 			broadcast <- Message{
-				Username:    Pseudo,
+				Username:    userdata.Pseudo,
 				TextMessage: string(jsonMessage),
 			}
 		}
@@ -1360,7 +1460,7 @@ func JoinPublicPetitBac(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userID, _ := strconv.Atoi(cookie.Value)
-	roomID := 1
+	roomID := 3
 
 	if !database.CheckRoomExistence(roomID) {
 		db := database.InitTable("ROOMS")
@@ -1368,8 +1468,8 @@ func JoinPublicPetitBac(w http.ResponseWriter, r *http.Request) {
 
 		createdBy := userID
 		maxPlayers := 50
-		name := "publicGuessTheSong"
-		gameID := 1
+		name := "publicPetitBac"
+		gameID := 3
 
 		// Create the public room
 		_, err := db.Exec("INSERT INTO ROOMS (id, created_by, max_player, number_of_player, name, id_game) VALUES (?, ?, ?, ?, ?, ?)", roomID, createdBy, maxPlayers, 0, name, gameID)
@@ -1382,10 +1482,10 @@ func JoinPublicPetitBac(w http.ResponseWriter, r *http.Request) {
 		defer gameRoomDB.Close()
 
 		numberOfGameTurns := 10
-		timeOfMusic := 10
-		timeToAnswer := 5
+		categories := "album, groupe de musique, instrument de musique, featuring"
+		timeToAnswer := 60
 
-		_, err = gameRoomDB.Exec("INSERT INTO GAME_ROOM (id_room, game_state, number_of_game_turns, blindtest_time_of_music, blindtest_time_to_answer) VALUES (?, ?, ?, ?, ?)", roomID, true, numberOfGameTurns, timeOfMusic, timeToAnswer)
+		_, err = gameRoomDB.Exec("INSERT INTO GAME_ROOM (id_room, game_state, number_of_game_turns, petitbac_categories, petitbac_time_to_answer) VALUES (?, ?, ?, ?, ?)", roomID, true, numberOfGameTurns, categories, timeToAnswer)
 		if err != nil {
 			log.Println("Error creating game room:", err)
 			return
@@ -1394,7 +1494,7 @@ func JoinPublicPetitBac(w http.ResponseWriter, r *http.Request) {
 
 	database.JoinRoom(roomID, userID)
 
-	http.Redirect(w, r, "/GuessTheSong", http.StatusSeeOther)
+	http.Redirect(w, r, "/PetitBac", http.StatusSeeOther)
 }
 
 func CreatePetitBac(w http.ResponseWriter, r *http.Request) {
@@ -1403,10 +1503,14 @@ func CreatePetitBac(w http.ResponseWriter, r *http.Request) {
 
 func CreatePetitBacHandler(w http.ResponseWriter, r *http.Request) {
 	gameTurns, _ := strconv.Atoi(r.FormValue("gameTurns"))
-	categories := r.Form["categories[]"]
 	answerDuration, _ := strconv.Atoi(r.FormValue("answerDuration"))
 	roomName := r.FormValue("roomName")
 	maxPlayer, _ := strconv.Atoi(r.FormValue("maxPlayer"))
+	categories := r.Form["categories[]"]
+
+	for i, category := range categories {
+		categories[i] = strings.ToLower(category)
+	}
 
 	if gameTurns <= 0 {
 		gameTurns = 5
@@ -1426,7 +1530,7 @@ func CreatePetitBacHandler(w http.ResponseWriter, r *http.Request) {
 	userID, _ := strconv.Atoi(sessionID)
 	gameID := 1
 
-	database.CreatePetitbacRoom(userID, maxPlayer, roomName, gameID, gameTurns, categories, answerDuration)
+	database.CreatePetitbacRoom(userID, maxPlayer, roomName, gameID, gameTurns, strings.Join(categories, ", "), answerDuration)
 
 	http.Redirect(w, r, "/PetitBacRoom", http.StatusSeeOther)
 }
