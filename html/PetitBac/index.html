@@ -13,6 +13,17 @@
 
 <body>
     <h1 class="title-top">Petit Bac</h1>
+    <div class="scoreboard">
+        {{if .UserScore}}
+        Score : {{.UserScore}}
+        {{end}}
+        {{if .Username}}
+        User : {{.Username}}
+        {{end}}
+        {{if .ActualTurn}}
+        Tour {{.ActualTurn}} / {{.NumberOfTurns}}
+        {{end}}
+    </div>
     <div class="lyrics">
         <form action="/PetitBac" method="post" style="display: inline;">
         <div class="divParoles">

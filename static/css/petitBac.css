@@ -195,3 +195,15 @@ body {
     border-radius: 10px;
     margin: 0.5%;
 }
+
+.scoreboard {
+    justify-content: center;
+    align-items: center;
+    border: 2px solid #ccc;
+    color: white;
+    position: fixed;
+    border-radius: 10px;
+    top: 10px;
+    right: 10px;
+    z-index: 999;
+  }

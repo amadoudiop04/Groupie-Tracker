@@ -164,6 +164,15 @@ type LyricsResponse struct {
 	Lyrics string `json:"lyrics"`
 }
 
+type gamesData struct {
+	Name           string
+	NumberOfTurn   int
+	AnswerDuration int
+}
+
+var GuessTheSongData gamesData
+var PetitBacData gamesData
+
 var CurrentSong = Song{
 	Singer:            "",
 	TitleSong:         "",

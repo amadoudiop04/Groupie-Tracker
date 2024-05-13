@@ -17,14 +17,21 @@
 <body>
     <h1 class="title-top">Guess the song</h1>
     <div class="scoreBoard">
-        {{.Datasgames.Scores}}/50Pts
-        {{.Datasgames.RemainingAttempts}}Attempts
+        {{if .UserScore}}
+        Score : {{.UserScore}}
+        {{end}}
+        {{if .Username}}
+        User : {{.Username}}
+        {{end}}
+        {{if .ActualTurn}}
+        Tour {{.ActualTurn}} / {{.NumberOfTurns}}
+        {{end}}
     </div>
 
     <div class="player">
         <div class="lyricsContainer">
             <div class="divParoles" id="parolesContainer">
-                <p id="lyrics" style="display: none;">{{.Datasgames.LyricsSong}}</p>
+                <p id="lyrics" style="display: none;">{{.MediasGuessthesong.Datasgames.LyricsSong}}</p>
                 <p class="lines" id="line1" style="opacity: 0;"></p>
                 <p class="lines" id="line2" style="opacity: 0;"></p>
                 <p class="lines" id="line3" style="opacity: 0;"></p>
@@ -36,7 +43,7 @@
                     <div class="Message">
                     Chat message🖊
                     <br>
-                    {{range $index, $message := .Info}}
+                    {{range $index, $message := .MediasGuessthesong.Info}}
                     {{$message.Username}}: {{$message.TextMessage}}<button class="DeleteBtn" type="submit" name="action"
                         value="DeleteMessage">🗑</button>
                     <input type="hidden" name="messageIndex" value="{{$index}}">
