@@ -24,7 +24,9 @@
                     </tr>
                     {{range .ScoreBoard}}
                     <tr>
-                        <td>{{.}}</td>
+                        <td>{{.Rank}}</td>
+                        <td>{{.Name}}</td>
+                        <td>{{.Points}}</td>
                     </tr>
                     {{end}}
                 </thead>

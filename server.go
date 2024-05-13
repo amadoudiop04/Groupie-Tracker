@@ -1796,6 +1796,12 @@ func PetitBacRules(w http.ResponseWriter, r *http.Request) {
 	renderTemplate(w, "PetitBac/Rules.html", nil)
 }
 
+type Classement struct {
+	Rank   int
+	Name   string
+	Points int
+}
+
 func Result(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("session_id")
 	if err != nil {
@@ -1807,16 +1813,22 @@ func Result(w http.ResponseWriter, r *http.Request) {
 	roomID, _ := database.GetRoomIDByUserID(userID)
 	userIDs := database.GetAllUserInRoom(roomID)
 
-	var scoreBoard [][]string
+	var scoreBoard []Classement
+
 	for _, userID := range userIDs {
 		userScore := database.GetUserScore(roomID, userID)
 		userData, _ := database.GetUserData(strconv.Itoa(userID))
 		username := userData.Pseudo
-		scoreBoard = append(scoreBoard, []string{username, strconv.Itoa(userScore)})
+		rank := rand.Intn(2) + 1
+		scoreBoard = append(scoreBoard, Classement{
+			Rank:   rank,
+			Name:   username,
+			Points: userScore,
+		})
 	}
 
 	data := struct {
-		ScoreBoard [][]string
+		ScoreBoard []Classement
 	}{
 		ScoreBoard: scoreBoard,
 	}
