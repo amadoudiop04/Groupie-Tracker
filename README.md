@@ -13,25 +13,20 @@ Une fois inscrit et connecté, l'utilisateur peut choisir le jeu auquel il souha
 #### Guess the song 📜
 
 Le but du guess the song est de trouver le titre d'une musique à partir de ses paroles. 
-Les points sont attribués en fonction de la rapidité des joueurs : plus vous répondez rapidement par rapport aux autres joueurs, plus vous obtenez de points ! Les points attribués sont doublés à chaque tour de jeu.
-Un tour de jeu prend fin lorsque tous les joueurs ont trouvé le titre de la chanson, ou bien lorsque le compte à rebours se termine. Si un joueur ne suggère aucun titre, aucun point ne lui est attribué.
-Entre chaque tour, le classement apparaît pour permetttre aux joueurs de connaître leur position actuelle.
-La partie prend fin lorsque le nombre de tour atteint le nombre définit à la création de la partie. Le classement final apparaît pour déterminer le vainqueur de la partie.
+La partie prend fin lorsque le nombre de tour atteint le nombre définit à la création de la partie. Le classement final apparaît pour déterminer le vainqueur de la partie. 
+Attention ! Plus les joueurs répondent rapidement et plus cela handicape les autres. En effet, lorsqu'un joueur répond avant les autres, il consomme un tour de jeu que les autres ne pourront donc pas avoir. C'est l'opportunité d'obtenir plus de points pour les joueurs les plus rapides !
 
 #### Blindtest 🎧 
 
 Le but du blindtest est similaire à celui du guess the song, cette fois cependant, il faut retrouver le titre de la musique à partir du son : les paroles ne sont pas affichées !  
-La musique choisie ainsi que l'extrait de celle-ci sont aléatoires. La durée minimale de cet extrait est configurée à la création de la partie. 
-Les extraits audios peuvent également être configurés à la création de la partie : ralentis, accélérés, inversé ou normal, à vous de choisir !
-Les points sont attribués en fonction de la rapidité des joueurs : plus vous répondez rapidement par rapport aux autres joueurs, plus vous obtenez de points. 
-Un tour de jeu prend fin lorsque tous les joueurs ont trouvé le titre de la chanson, ou bien lorsque le compte à rebours se termine. Si un joueur ne suggère aucun titre, aucun point ne lui est attribué.
-Entre chaque tour, le classement apparaît pour permetttre aux joueurs de connaître leur position actuelle.
+La musique choisie est aléatoire. La durée minimale de cet extrait est configurée à la création de la partie. 
+Un tour de jeu prend fin lorsque le compte à rebours se termine, ou bien lorsque le joueur envoie sa réponse. Si un joueur ne suggère aucun titre, aucun point ne lui est attribué.
 La partie prend fin lorsque le nombre de tour atteint le nombre définit à la création de la partie. Le classement final apparaît pour déterminer le vainqueur de la partie.
 
 #### Petit bac ✏️
 
 Le but du petit bac est de trouver un mot pour chaque catégorie avec la lettre imposé !
-À chaque tour, une lettre aléatoire est imposé par le jeu. Les joueurs doivent trouver un mot commençant par cette lettre pour chaque catégorie imposée. Le même lettre ne peut pas être imposée deux fois lors d'une même partie.
+À chaque tour, une lettre aléatoire est imposé par le jeu. Les joueurs doivent trouver un mot commençant par cette lettre pour chaque catégorie imposée.
 Les catégories de mots sont imposés et non modifiables, les voici : 
 - Artiste
 - Album
@@ -39,20 +34,14 @@ Les catégories de mots sont imposés et non modifiables, les voici :
 - Instrument de musique
 - Featuring
 
-Des points sont attribués pour chaque catégorie :
-- Si vous n’avez pas donné de réponse ou une mauvaise réponse, vous n'obtenez aucun point.
-- Si vous avez donné une réponse valide et qu'un autre joueur a donné la même réponse, vous obtenez 1 point.
-- Si vous avez donné une réponse valide et qu'aucun autre joueur n'a donné la même réponse, vous obtenez 2 points.
-
-Un tour de jeu prend fin lorsqu'un joueur à trouver un mot pour chaque catégorie, ou bien lorsque le compte à rebours se termine. Le temps qui est donné aux joueurs pour répondre peut être configuré à la création de la partie.
-Entre chaque tour, le classement apparaît pour permettre aux joueurs de connaître leur position actuelle.
+Un tour de jeu prend fin lorsqu'un joueur a trouvé un mot pour chaque catégorie, ou bien lorsque le compte à rebours se termine. Le temps qui est donné aux joueurs pour répondre peut être configuré à la création de la partie.
 La partie prend fin lorsque le nombre de tour atteint le nombre définit à la création de la partie. Le classement final apparaît pour déterminer le vainqueur de la partie.
 
 ### Fonctionnalités diverses
 
 En cas d'oubli de mot de passe, l'utilisateur peut recevoir un mail pour le réinitialiser.  
-Personnalisation des parties lors de leur création.  
-Possibilité d'inviter ses amis par mail ou directement depuis le site.
+Les joueurs peuvent personnalisés leur partie lors de la création de leur serveur.  
+Les utilisateurs peuvent modifier les informations de leur compte à tout moment depuis l'espace profil, accessible depuis la page d'accueil.
 
 ## Démarrage
 
@@ -60,15 +49,31 @@ Possibilité d'inviter ses amis par mail ou directement depuis le site.
 
 - Visual Studio Code 
 - go 1.22.0
+- ngrok
 
 ### Installation et Exécution
 
-À partir d'un terminal de commande Linux :
-- Éxécutez la commande `git clone https://github.com/amadoudiop04/Groupie-Tracker`
-- Éxécutez la commande `cd Groupie-Tracker`
-- Éxécutez la commande `go run server.go`
-- Une fenêtre devrait apparaître en bas à droite du logiciel. Cliquez sur le bouton `Open in Browser`
+Pour jouer seul : 
+-----------------
+    À partir d'un terminal de commande Linux :
+    - Exécutez la commande `git clone https://github.com/amadoudiop04/Groupie-Tracker`
+    - Exécutez la commande `cd Groupie-Tracker`
+    - Exécutez la commande `go run server.go`
+    - Une fenêtre devrait apparaître en bas à droite du logiciel. Cliquez sur le bouton `Open in Browser`
+
+
+Pour jouer à plusieurs :
+------------------------
+Commencez par installer ngrok (`https://ngrok.com/download`). Le dossier téléchargé est compressé, vous devez le décompresser.
+Créez un compte sur le site de ngrok (`https://dashboard.ngrok.com/signup`). Gardez cette page ouverte.
+À partir d'un terminal de commande Linux, vous pouvez maintenant lancer les commandes :
+    - Exécutez la commande `git clone https://github.com/amadoudiop04/Groupie-Tracker`
+    - Exécutez la commande `cd Groupie-Tracker`
+    - Exécutez la commande `go run server.go`
+Enfin, ouvrez l'application "ngrok.exe" depuis le dossier décompressé. Sur la page d'accueil de ngrok, vous pourrez trouver une commande commençant par `ngrok config add-authtoken` (il faut être connecté pour y avoir accès). Copiez cette commande et collez la dans le terminal de l'application ngrok.
+Vous pouvez maintenant lancer la commande `ngrok.exe http 8080` depuis le terminal ngrok. Le site vient d'être mis à disposition de tous sur internet. Pour y accéder, un lien est mis à votre disposition par ngrok. Suivez ce lien sur votre navigateur, cliquez sur `Visit Site`, et voilà ! Vous pouvez maintenant jouer avec n'importe qui !
+Le site peut être supprimé à tout instant par la personne l'ayant lancé. Au prochain lancement, l'hôte aura seulement besoin de lancer le serveur golang avec la commande `go run server.go`, puis dans lancer la commande `ngrok.exe http 8080` dans le terminal ngrok.
 
 ## Auteurs
 
-Projet réalisé par Flandrin Hugo, Diop Amadou et Sghaier Yassine dans le cadre du module Groupie Tracker à Ynov.
+Projet réalisé par Flandrin Hugo, Diop Amadou et Sghaier Yassine dans le cadre du module Groupie Tracker à Ynov Lyon.
