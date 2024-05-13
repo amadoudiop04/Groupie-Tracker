@@ -49,6 +49,7 @@ func InitTable(database string) *sql.DB {
 					id_room INTEGER PRIMARY KEY,
 					game_state BOOLEAN NOT NULL,
 					number_of_game_turns INTEGER,
+					blindtest_track_index INTEGER,
 					blindtest_time_of_music INTEGER,
 					blindtest_time_to_answer INTEGER,
 					petitbac_categories TEXT,

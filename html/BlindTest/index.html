@@ -14,8 +14,15 @@
 <body>
     <h1 class="title-top">Blind Test</h1>
         <div class="scoreboard">
-            <h2>00 / Points</h2>
-            <h2>... / Users</h2>
+            {{if .UserScore}}
+            <h2>Score : {{.UserScore}}</h2>
+            {{end}}
+            {{if .Username}}
+            <h2>User : {{.Username}}</h2>
+            {{end}}
+            {{if .ActualTurn}}
+            <h2>Tour {{.ActualTurn}} / {{.NumberOfTurns}}</h2>
+            {{end}}
         </div>
 
     <div class="container-block">
@@ -50,9 +57,9 @@
       
         <form action="/Blindtest" method="post">
             <div class="inputContainer">
-                <input class="myInput" type="text" name="value" placeholder="Votre réponse">
+                <input class="myInput" type="text" name="BlindtestResponse" placeholder="Votre réponse">
             </div> 
-            <button  class="mybtn" type="submit" name="action" value="BlindTest">Valider</button>
+            <button  class="mybtn" type="submit" name="response" value="BlindTestResponse">Valider</button>
         </form>
     </div>
 

@@ -51,10 +51,6 @@ func ApiTrack() *spotify.FullTrack {
 		log.Fatalf("error retrieve playlist data: %v", err)
 	}
 
-	log.Println("playlist id:", playlist.ID)
-	log.Println("playlist name:", playlist.Name)
-	log.Println("playlist description:", playlist.Description)
-
 	for {
 		Max := len(playlist.Tracks.Tracks)
 		randomIndex := GetRandomIndex(Max)
@@ -68,20 +64,15 @@ func ApiTrack() *spotify.FullTrack {
 
 		lyrics, err := GetLyrics(artist, title)
 		TheLyrics = lyrics
-		log.Println("le lyrics", lyrics)
 		if err != nil || lyrics == "" {
 			log.Printf("No lyrics found for %s by %s, skipping...", title, artist)
 			continue
 		}
-		log.Println("Track Name", track.Name)
-		log.Println("Artists(s)", GetArtistsNames(track.Artists))
 
 		artistID := track.Artists[0].ID
 		artistDetails, err := client.GetArtist(artistID)
 		if err != nil {
 			log.Printf("Error retrieving artist details: %v", err)
-		} else {
-			log.Println("Artist Image URL:", artistDetails.Images[0].URL)
 		}
 
 		artistImageURL := ""
@@ -119,7 +110,6 @@ func GetArtistsNames(artists []spotify.SimpleArtist) string {
 }
 
 func GetTrackInfo(playlist *spotify.FullPlaylist) (*spotify.FullTrack, error) {
-	fmt.Println(GameIndex)
 	if playlist == nil || len(playlist.Tracks.Tracks) == 0 {
 		return nil, errors.New("empty or nil playlist")
 	}
@@ -133,8 +123,6 @@ func GetTrackInfo(playlist *spotify.FullPlaylist) (*spotify.FullTrack, error) {
 		}
 		return &playlist.Tracks.Tracks[GameIndex].Track, nil
 	}
-	fmt.Println(GameIndex)
-	// fmt.Println(playlist.Tracks.Tracks)
 	return &playlist.Tracks.Tracks[GameIndex].Track, nil
 }
 
@@ -220,18 +208,13 @@ func LoadData() {
 
 	lyrics, err := GetLyrics(artist, title)
 	if err != nil {
-		log.Fatalf("error retrieving lyrics: %v", err)
+		fmt.Printf("error retrieving lyrics: %v", err)
 	}
 
 	CurrentSong.Singer = artist
 	CurrentSong.TitleSong = title
 	CurrentSong.LyricsSong = truncLyrics(lyrics)
 	CurrentSong.ImageURL = data.imageUrl
-
-	fmt.Println("artist", artist)
-	fmt.Println("Title", title)
-	fmt.Println("lyrics :", lyrics)
-	fmt.Println("imageUrl:", data.imageUrl)
 }
 
 func ResetData() {
@@ -275,9 +258,6 @@ func truncLyrics(lyrics string) string {
 
 	randomLineIndex := rand.Intn(len(filteredLines) - 6)
 	truncatedLyrics := strings.Join(filteredLines[randomLineIndex:randomLineIndex+5], "\n")
-	fmt.Println("-------")
-	fmt.Println(truncatedLyrics)
-	fmt.Println("-------")
 
 	return truncatedLyrics
 }

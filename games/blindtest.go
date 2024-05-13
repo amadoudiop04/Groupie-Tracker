@@ -4,6 +4,8 @@ import (
 	"context"
 	"log"
 	"math/rand"
+	"strings"
+	"unicode"
 
 	"github.com/zmb3/spotify"
 	"golang.org/x/oauth2/clientcredentials"
@@ -45,16 +47,16 @@ func Api(ID string) []*spotify.SimpleTrack {
 	return tracks
 }
 
-func NextTrack(tracks []*spotify.SimpleTrack) *spotify.SimpleTrack {
+func NextTrack(tracks []*spotify.SimpleTrack) (*spotify.SimpleTrack, int) {
 
 	if len(tracks) == 0 {
-		return nil
+		return nil, -1
 	}
 
 	var nextTrack *spotify.SimpleTrack
-
+	var index int
 	for {
-		index := rand.Intn(len(tracks))
+		index = rand.Intn(len(tracks))
 		nextTrack = tracks[index]
 
 		if nextTrack.PreviewURL != "" {
@@ -62,7 +64,7 @@ func NextTrack(tracks []*spotify.SimpleTrack) *spotify.SimpleTrack {
 		}
 	}
 
-	return nextTrack
+	return nextTrack, index
 }
 
 func RemovePlayedTracks(tracks []*spotify.SimpleTrack) []*spotify.SimpleTrack {
@@ -84,6 +86,20 @@ func IsTrackPlayed(track *spotify.SimpleTrack) bool {
 		}
 	}
 	return false
+}
+
+func NormalizeString(s string) string {
+	// Convertir en minuscules
+	s = strings.ToLower(s)
+
+	// Normaliser les accents
+	t := make([]rune, 0, len(s))
+	for _, r := range s {
+		if unicode.IsLetter(r) {
+			t = append(t, unicode.ToLower(r))
+		}
+	}
+	return string(t)
 }
 
 type gameData struct {

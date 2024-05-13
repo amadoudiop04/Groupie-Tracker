@@ -541,10 +541,7 @@ func Blindtest(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/JoinBlindtest", http.StatusSeeOther)
 	}
 
-	roomData, err := database.GetRoomData(roomID)
-	if err != nil {
-		fmt.Println("La room n'est associée à aucune données")
-	}
+	roomData := database.GetRoomData(roomID)
 
 	//Online chat
 	if r.Method == "POST" {
@@ -598,13 +595,22 @@ func Blindtest(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Refresh", strconv.Itoa(roomData.BlindtestTimeOfMusic+roomData.BlindtestTimeToAnswer))
 		tracks := games.Api("6Xf0gjt1YmwvEG5iS8QOfg?si=2de553d01ff84abb")
 		tracks = games.RemovePlayedTracks(tracks)
-		currentTrack := games.NextTrack(tracks)
+		currentTrack, indexTrack := games.NextTrack(tracks)
 
 		if currentTrack == nil {
 			http.Redirect(w, r, "/EndBlindtest", http.StatusSeeOther)
 		}
 
-		games.PlayedTracks = append(games.PlayedTracks, currentTrack)
+		gameData := database.GetRoomData(roomID)
+
+		if games.BlindtestData.NumberOfTurn == -1 {
+			games.BlindtestData.NumberOfTurn = gameData.NumberOfGameTurns
+		} else {
+			games.BlindtestData.NumberOfTurn--
+		}
+		if games.BlindtestData.NumberOfTurn == 0 {
+			http.Redirect(w, r, "/Result", http.StatusSeeOther)
+		}
 
 		trackData := games.PageData{
 			Track: currentTrack,
@@ -615,42 +621,75 @@ func Blindtest(w http.ResponseWriter, r *http.Request) {
 			Info:               messages,
 		}
 
+		userData, _ := database.GetUserData(strconv.Itoa(userID))
+		userScore := database.GetUserScore(roomID, userID)
+
+		if r.Method == "POST" {
+			response := r.FormValue("BlindtestResponse")
+			if games.NormalizeString(response) == games.NormalizeString(games.PlayedTracks[len(games.PlayedTracks)-1].Name) {
+				userScore++
+				database.SetUserScore(roomID, userID, userScore)
+			}
+		}
+		games.PlayedTracks = append(games.PlayedTracks, currentTrack)
+
 		//Data
+		data := struct {
+			MediasBlindtest  Data
+			Username         string
+			UserScore        int
+			DurationOfMusic  int
+			DurationOfAnswer int
+			ActualTurn       int
+			NumberOfTurns    int
+		}{
+			MediasBlindtest:  mediasBlindtest,
+			Username:         userData.Pseudo,
+			UserScore:        userScore,
+			DurationOfMusic:  roomData.BlindtestTimeOfMusic,
+			DurationOfAnswer: roomData.BlindtestTimeToAnswer,
+			ActualTurn:       gameData.NumberOfGameTurns - games.BlindtestData.NumberOfTurn + 1,
+			NumberOfTurns:    gameData.NumberOfGameTurns,
+		}
+
+		gameData.BlindtestTrackIndex = indexTrack
+		gameData.BlindtestTimeOfMusic = data.DurationOfMusic
+		gameData.BlindtestTimeToAnswer = data.DurationOfAnswer
+		database.UpdateGameData(gameData, roomID)
+
+		//Execute html
+		renderTemplate(w, "BlindTest/index.html", data)
+
+	} else {
+		time.Sleep(50 * time.Millisecond)
+		gameData := database.GetRoomData(roomID)
+		w.Header().Set("Refresh", strconv.Itoa(gameData.BlindtestTimeOfMusic+gameData.BlindtestTimeToAnswer))
+
+		tracks := games.Api("6Xf0gjt1YmwvEG5iS8QOfg?si=2de553d01ff84abb")
+		tracks = games.RemovePlayedTracks(tracks)
+		// currentTrack := tracks[gameData.BlindtestTrackIndex]
+		currentTrack, _ := games.NextTrack(tracks)
+		// fmt.Println("Tracks lenght : " + strconv.Itoa(len(tracks)))
+		// fmt.Println("Players index : " + strconv.Itoa(gameData.BlindtestTrackIndex))
+
+		trackData := games.PageData{
+			Track: currentTrack,
+		}
+
+		mediasBlindtest := Data{
+			DatasgameBlindTest: trackData,
+			Info:               messages,
+		}
+
 		data := struct {
 			MediasBlindtest  Data
 			DurationOfMusic  int
 			DurationOfAnswer int
 		}{
 			MediasBlindtest:  mediasBlindtest,
-			DurationOfMusic:  roomData.BlindtestTimeOfMusic,
-			DurationOfAnswer: roomData.BlindtestTimeToAnswer,
+			DurationOfMusic:  gameData.BlindtestTimeOfMusic,
+			DurationOfAnswer: gameData.BlindtestTimeToAnswer,
 		}
-
-		
-jsonData, err := json.Marshal(data)
-if err != nil {
-    fmt.Println("Erreur de marshaling JSON:", err)
-    return
-}
-
-for client := range clients {
-    err := client.WriteJSON(jsonData)
-    if err != nil {
-        fmt.Println("Erreur d'envoi de message JSON:", err)
-        client.Close()
-        delete(clients, client)
-    }
-}
-
-		//Execute html
-		renderTemplate(w, "BlindTest/index.html", data)
-	} else {
-
-		data := struct {
-			MediasBlindtest  Data
-			DurationOfMusic  int
-			DurationOfAnswer int
-		}{}
 		renderTemplate(w, "BlindTest/index.html", data)
 	}
 }
@@ -684,6 +723,8 @@ func BlindtestRoom(w http.ResponseWriter, r *http.Request) {
 		RoomID:          roomID,
 		PlayerNumber:    numberOfPlayer,
 	}
+
+	games.BlindtestData.NumberOfTurn = -1
 
 	if userID == creatorID {
 		data.ButtonVisible = true
@@ -762,6 +803,7 @@ func JoinPublicBlindtest(w http.ResponseWriter, r *http.Request) {
 
 	userID, _ := strconv.Atoi(cookie.Value)
 	roomID := 1
+	games.BlindtestData.NumberOfTurn = -1
 
 	if !database.CheckRoomExistence(roomID) {
 		db := database.InitTable("ROOMS")
@@ -897,10 +939,7 @@ func GuessTheSong(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/JoinGuessTheSong", http.StatusSeeOther)
 	}
 
-	roomData, err := database.GetRoomData(roomID)
-	if err != nil {
-		fmt.Println("La room n'est associée à aucune données")
-	}
+	roomData := database.GetRoomData(roomID)
 
 	if userID == database.GetRoomCreator(roomID) {
 		w.Header().Set("Refresh", strconv.Itoa(roomData.GuessthesongTimeToAnswer))
@@ -1137,10 +1176,8 @@ func JoinPublicGuessTheSong(w http.ResponseWriter, r *http.Request) {
 
 	userID, _ := strconv.Atoi(cookie.Value)
 	roomID := 2
-	fmt.Println("data ok")
 
 	if !database.CheckRoomExistence(roomID) {
-		fmt.Println("boucle if ok")
 		db := database.InitTable("ROOMS")
 		defer db.Close()
 
@@ -1283,21 +1320,14 @@ func PetitBac(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Refresh", "31")
 	if r.Method == "POST" {
 		action := r.FormValue("action")
-		if action == "true" {
-			r.ParseForm()
-			artiste := r.Form.Get("artiste")
-			album := r.Form.Get("album")
-			groupe := r.Form.Get("groupe")
-			instrument := r.Form.Get("instrument")
-			featuring := r.Form.Get("featuring")
-
-			fmt.Println("Nouvelle entrée ajoutée :")
-			fmt.Println("Artiste:", artiste)
-			fmt.Println("Album:", album)
-			fmt.Println("Groupe de musique:", groupe)
-			fmt.Println("Instrument de musique:", instrument)
-			fmt.Println("Featuring:", featuring)
-		}
+		// if action == "true" {
+		// 	r.ParseForm()
+		// 	artiste := r.Form.Get("artiste")
+		// 	album := r.Form.Get("album")
+		// 	groupe := r.Form.Get("groupe")
+		// 	instrument := r.Form.Get("instrument")
+		// 	featuring := r.Form.Get("featuring")
+		// }
 
 		if action == "ChatMessage" {
 			cookie, err := r.Cookie("session_id")
@@ -1594,8 +1624,30 @@ func PetitBacRules(w http.ResponseWriter, r *http.Request) {
 	renderTemplate(w, "PetitBac/Rules.html", nil)
 }
 
-
-
 func Result(w http.ResponseWriter, r *http.Request) {
-	renderTemplate(w, "Result/Result.html", nil)
+	cookie, err := r.Cookie("session_id")
+	if err != nil {
+		http.Redirect(w, r, "/Login", http.StatusSeeOther)
+		return
+	}
+	userID, _ := strconv.Atoi(cookie.Value)
+
+	roomID, _ := database.GetRoomIDByUserID(userID)
+	userIDs := database.GetAllUserInRoom(roomID)
+
+	var scoreBoard [][]string
+	for _, userID := range userIDs {
+		userScore := database.GetUserScore(roomID, userID)
+		userData, _ := database.GetUserData(strconv.Itoa(userID))
+		username := userData.Pseudo
+		scoreBoard = append(scoreBoard, []string{username, strconv.Itoa(userScore)})
+	}
+
+	data := struct {
+		ScoreBoard [][]string
+	}{
+		ScoreBoard: scoreBoard,
+	}
+
+	renderTemplate(w, "BlindTest/Result.html", data)
 }
